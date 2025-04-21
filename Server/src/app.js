@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const port  = 4000;
 const routes = require("./routes/index")
+const {getSqlServerPool , mysqlConnection} = require ("./config/config")
 const corsOptions = {
     origin: 'http://localhost:3000', // Đảm bảo URL này khớp với frontend của bạn
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -19,7 +20,21 @@ routes(app)
 
 
 app.listen(port, ()=>{  
+  // test SQL Server connection
+  getSqlServerPool()
+  .then(async (pool) => {
+    try {
+      const result = await pool.request().query('SELECT TOP 1 * FROM YourTableName'); // Thay 'YourTableName' bằng bảng có thật
+      console.log('SQL Server test query result:', result.recordset);
+    } catch (err) {
+      console.error('Error executing SQL Server query:', err);
+    }
+  })
+  .catch((err) => {
+    console.error('Error getting SQL Server pool:', err);
+  });
 
+  
 
     console.log(`listening sucessful port ${port}`)
    
