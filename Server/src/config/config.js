@@ -11,6 +11,18 @@ const mysqlConnection = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
+// auth connection Mysql
+const authMysqlConnection = mysql.createPool({
+  host: 'localhost',
+  user:"root",
+  password:"duy270304",
+  database:"authDashboard",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+})
+
+
 
 // SQL Server Config
 const sqlServerConfig = {
@@ -46,19 +58,10 @@ async function getSqlServerPool() {
   return sqlServerPool;
 }
 
-// Test MySQL
-mysqlConnection.getConnection()
-  .then(conn => {
-    console.log('Connected to MySQL');
-    conn.release();
-  })
-  .catch(err => {
-    console.error('Error connecting to MySQL:', err);
-  });
-
 
 
 module.exports = {
   mysqlConnection,
   getSqlServerPool,
+  authMysqlConnection
 };

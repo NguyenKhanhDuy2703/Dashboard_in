@@ -16,9 +16,9 @@ const PayrollAttendanceLayout = () => {
       case "Payroll":
         return <PayrollView />;
       case "Salary history":
-        return <AttendanceRecord />;
-      case "Attendance records":
         return <ViewPayrollHistory />;
+      case "Attendance records":
+        return <AttendanceRecord />;
       default:
         return <PayrollView />;
     }

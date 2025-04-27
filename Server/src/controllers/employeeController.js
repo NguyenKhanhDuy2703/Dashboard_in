@@ -1,33 +1,159 @@
-const employeeModel = require ("../models/employee.model.js")
-// noi tuong tac voi model 
-// va tra ve du lieu cho client
-//1. import model
-//2. tao controller
-//3. goi model va tra ve du lieu cho client
-//4. export controller
-//5. import controller vao route
-//6. goi controller trong route
+const employeeModel = require("../models/employee.model");
 
-const getEmployeesController = ( req , res ) => {
-    // controller bao gồm  2 tham số req va res
-    // req : là request từ client gửi lên server
-    // res : là response từ server gửi về client
-    // trong controller sẽ gọi model và trả về dữ liệu cho client
-    // ví dụ như lấy danh sách nhân viên
-    // trong model sẽ có các hàm để tương tác với database
-    // model sẽ trả về một phương thức để lấy dữ liệu từ database
-    // phuong thức nhận một callback ( bao gồm 2 tham só là err và result)
-    // err : là lỗi nếu có
-    // result : là kết quả trả về từ database
-    
-    employeeModel.getAllEmployees((err, result) => {
-        if (err) {  
-            console.error('Error fetching employees:', err);
-            return res.status(500).json({ error: 'Error fetching employees' });
+const getAllEmployeesController = (req, res) => {
+  employeeModel.getAllEmployees((err, data) => {
+    try {
+      if (err) {
+        return res.status(500).json({
+          message: err.message,
+        });
+      }
+      if (data.length === 0) {
+        return res.status(404).json({
+          message: "No data found",
+        });
+      }
+      return res.status(200).json({
+        message: "Get all employees success",
+        data: data,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message,
+      });
+    }
+  });
+};
+const getEmployeeByIdController = (req, res) => {
+  const { id } = req.query;
+  employeeModel.getEmployeeById(id, (err, data) => {
+    try {
+      if (err) {
+        return res.status(500).json({
+          message: err.message,
+        });
+      }
+      if (data.length === 0) {
+        return res.status(404).json({
+          message: "No data found",
+        });
+      }
+      return res.status(200).json({
+        message: "Get  employees by id success",
+        data: data,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message,
+      });
+    }
+  });
+};
+const addNewEmployeeController = (req, res) => {
+  const {
+    FullName,
+    DateOfBirth,
+    PhoneNumber,
+    HireDate,
+    Department,
+    PositionID,
+    Status,
+    Email,
+  } = req.body;
+
+  try {
+    if (
+      !FullName ||
+      !DateOfBirth ||
+      !PhoneNumber ||
+      !HireDate ||
+      !Department ||
+      !PositionID ||
+      !Status ||
+      !Email
+    ) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
+
+    const newEmployee = {
+      FullName,
+      DateOfBirth,
+      PhoneNumber,
+      HireDate,
+      Department,
+      PositionID,
+      Status,
+      Email,
+    };
+    // Check if employee already exists
+    employeeModel.getEmployeeByEmail(Email, (err, data) => {
+      if (err) {
+        return res.status(500).json({
+          message: err.message,
+        });
+      }
+      if (Object.keys(data).length !== 0) {
+        return res.status(400).json({
+          message: "Employee already exists",
+        });
+      } else {
+        employeeModel.addNewEmployee(newEmployee, (err, data) => {
+          try {
+            if (err) {
+              return res.status(500).json({
+                message: err.message,
+              });
+            }
+
+            return res.status(200).json({
+              message: "Add new employee success",
+              data: data,
+            });
+          } catch (error) {
+            return res.status(500).json({
+              message: error.message,
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+const deleteEmployeeController = (req, res) => {
+    const { id } = req.query;
+    employeeModel.deleteEmployeeById(id, (err, data) => {
+        try {
+        if (err) {
+            return res.status(500).json({
+            message: err.message,
+            });
         }
-        res.status(200).json(result);
+        if (data.length === 0) {
+            return res.status(404).json({
+            message: "No data found",
+            });
+        }
+        return res.status(200).json({
+            message: "Delete employee success",
+            data: data,
+        });
+        } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+        });
+        }
     });
 }
+
 module.exports = {
-    getEmployeesController
-}
+  getAllEmployeesController,
+  getEmployeeByIdController,
+  addNewEmployeeController,
+  deleteEmployeeController
+};
