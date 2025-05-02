@@ -46,7 +46,7 @@ const getPayrollbyEmployeeController = (req, res) => {
 const updatePayrollByEmployID = (req, res) => {
     const { Bonus, Deductions , EmployeeID } = req.body;
   
-    payrollModel.updatePayrollByEmployID(EmployeeID, Bonus, Deductions, (err, result) => {
+    payrollModel.updatePayrollByEmployID({EmployeeID, Bonus, Deductions}, (err, result) => {
       if (err) {
         console.error('Error updating payroll:', err);
         return res.status(500).json({ error: 'Error updating payroll' });

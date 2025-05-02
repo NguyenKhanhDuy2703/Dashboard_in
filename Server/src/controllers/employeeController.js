@@ -55,22 +55,23 @@ const addNewEmployeeController = (req, res) => {
     DateOfBirth,
     PhoneNumber,
     HireDate,
-    Department,
+    DepartmentID,
     PositionID,
     Status,
     Email,
+    Gender
   } = req.body;
-
   try {
     if (
       !FullName ||
       !DateOfBirth ||
       !PhoneNumber ||
       !HireDate ||
-      !Department ||
+      !DepartmentID ||
       !PositionID ||
       !Status ||
-      !Email
+      !Email ||
+      !Gender
     ) {
       return res.status(400).json({
         message: "All fields are required",
@@ -82,42 +83,36 @@ const addNewEmployeeController = (req, res) => {
       DateOfBirth,
       PhoneNumber,
       HireDate,
-      Department,
+      DepartmentID,
       PositionID,
       Status,
       Email,
+      Gender
     };
-    // Check if employee already exists
+    // kiem tra nhan vien da tồn tại  hay chưa
     employeeModel.getEmployeeByEmail(Email, (err, data) => {
-      if (err) {
-        return res.status(500).json({
-          message: err.message,
+      if (data.length !== 0) {
+        return res.status(400).json({
+          message: "Email already exists",
         });
       }
-      if (Object.keys(data).length !== 0) {
-        return res.status(400).json({
-          message: "Employee already exists",
-        });
-      } else {
-        employeeModel.addNewEmployee(newEmployee, (err, data) => {
-          try {
-            if (err) {
-              return res.status(500).json({
-                message: err.message,
-              });
-            }
-
-            return res.status(200).json({
-              message: "Add new employee success",
-              data: data,
-            });
-          } catch (error) {
+      employeeModel.addNewEmployee(newEmployee, (err, data) => {
+        try {
+          if (err) {
             return res.status(500).json({
-              message: error.message,
+              message: err.message,
             });
           }
-        });
-      }
+          return res.status(200).json({
+            message: "Add new employee success",
+            data: data,
+          });
+        } catch (error) {
+          return res.status(500).json({
+            message: error.message,
+          });
+        }
+      });
     });
   } catch (error) {
     return res.status(500).json({
@@ -126,34 +121,115 @@ const addNewEmployeeController = (req, res) => {
   }
 };
 const deleteEmployeeController = (req, res) => {
-    const { id } = req.query;
-    employeeModel.deleteEmployeeById(id, (err, data) => {
-        try {
+  const { Email } = req.body;
+  employeeModel.deleteEmployeeByEmail(Email, (err, data) => {
+    try {
+
+      if (err) {
+        return res.status(400).json({
+          message: err.message,
+        });
+      }
+      if (data.length === 0) {
+        return res.status(404).json({
+          message: "No data found",
+        });
+      }
+      return res.status(200).json({
+        message: "Delete employee success",
+        data: data,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: error,
+      });
+    }
+  });
+};
+const updateEmployeeController = (req, res) => {
+  const {
+    EmployeeId,
+    FullName,
+    Gender,
+    DateOfBirth,
+    PhoneNumber,
+    HireDate,
+    DepartmentID,
+    PositionID,
+    Status,
+    Email,
+  } = req.body;
+  employeeModel.updateEmployeeById(
+    {
+      EmployeeId,
+      FullName,
+      DateOfBirth,
+      PhoneNumber,
+      HireDate,
+      DepartmentID,
+      PositionID,
+      Status,
+      Email,
+      Gender,
+    },
+    (err, data) => {
+      try {
         if (err) {
-            return res.status(500).json({
+          return res.status(500).json({
             message: err.message,
-            });
+          });
         }
         if (data.length === 0) {
-            return res.status(404).json({
+          return res.status(404).json({
             message: "No data found",
-            });
+          });
         }
         return res.status(200).json({
-            message: "Delete employee success",
-            data: data,
+          message: "Update employee success",
+          data: data,
         });
-        } catch (error) {
+      } catch (error) {
         return res.status(500).json({
-            message: error.message,
+          message: error.message,
         });
+      }
+    }
+  );
+};
+const searchEmployeeController = (req, res) => {
+  const { EmployeeId, FullName, DepartmentID, PositionID } = req.query;
+  employeeModel.searchEmployee(
+    { EmployeeId, FullName, DepartmentID, PositionID },
+    (err, data) => {
+      try {
+        if (err) {
+          return res.status(500).json({
+            message: err.message,
+          });
         }
-    });
-}
+        if (data.length === 0) {
+          return res.status(404).json({
+            message: "No data found",
+          });
+        }
+        return res.status(200).json({
+          message: "Search employee success",
+          data: data,
+        });
+      } catch (error) {
+        return res.status(500).json({
+          message: error.message,
+        });
+      }
+    }
+  );
+};
 
 module.exports = {
   getAllEmployeesController,
   getEmployeeByIdController,
   addNewEmployeeController,
-  deleteEmployeeController
+  deleteEmployeeController,
+  updateEmployeeController,
+  searchEmployeeController,
 };

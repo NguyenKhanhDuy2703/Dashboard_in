@@ -5,10 +5,8 @@ const departmentModel = {
         try {
             // Kết nối đến SQL Server
             const pool = await getSqlServerPool();
-
             const resultSQLDepartment = await pool.request().query('SELECT DepartmentID, DepartmentName FROM Departments');
             const resultSQLPosition = await pool.request().query('SELECT PositionID, PositionName FROM Positions');
-
             // Kết nối đến MySQL
             const [rows] = await mysqlConnection.query('SELECT DepartmentID, DepartmentName FROM Departments');
             const [rows1] = await mysqlConnection.query('SELECT PositionID, PositionName FROM Positions');

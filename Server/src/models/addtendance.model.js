@@ -41,7 +41,7 @@ const addAttendanceModel = {
                 } else {
                     return null;
                 }
-            }).filter((item) => item !== null); // ✅ đúng: filter
+            }).filter((item) => item !== null); 
             cb(null, { attendance: merger });
         }catch (error) {
             console.error("Error fetching attendance:", error.message);

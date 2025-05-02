@@ -1,5 +1,5 @@
 const { getSqlServerPool, mysqlConnection } = require("../config/config");
-
+const {insertEmployeeMysql , insertEmployeeSQl , updateEmployeeMySQL , updateEmployeeSQl} = require("../repositories/employee.query")
 const employeeModel = {
   async getAllEmployees(cb) {
     try {
@@ -31,7 +31,6 @@ const employeeModel = {
 
       // Gộp dữ liệu
       const combinedData = [...sqlData, ...mysqlData];
-
       // Tạo Map để kiểm tra trùng FullName
       const uniqueMap = new Map();
 
@@ -60,7 +59,6 @@ const employeeModel = {
       // Lấy EmployeeID lớn nhất từ MySQL
       const mysqlCountQuery = `SELECT Max(EmployeeID) as MaxEmployeeID FROM employees`;
       const [mysqlCount] = await mysqlConnection.query(mysqlCountQuery);
-      console.log("sqlCountQuery", recordset, "mysqlCountQuery", mysqlCount);
       // Dữ liệu vào SQL Server
       const dataSQL = {
         EmployeeID: recordset[0].MaxEmployeeID + 1 ,
@@ -82,18 +80,6 @@ const employeeModel = {
         PositionID: employee.PositionID,
       };
 
-      // SQL Server query với biến @
-      const sqlQuery = `
-        INSERT INTO Employees (   FullName, DateOfBirth, PhoneNumber, Gender, Email, HireDate, DepartmentID, PositionID, Status , CreatedAt, UpdatedAt)
-        VALUES (  @FullName, @DateOfBirth, @PhoneNumber, @Gender, @Email, @HireDate, @DepartmentID, @PositionID, @Status , GETDATE(), GETDATE())
-      `;
-
-      // MySQL query vẫn dùng ?
-      const mysqlQuery = `
-        INSERT INTO employees (EmployeeID ,FullName, DepartmentID, PositionID)
-        VALUES (?, ?, ? , ?)
-      `;
-
 
       // Thực thi SQL Server
       const sqlRequest = pool
@@ -103,17 +89,16 @@ const employeeModel = {
         .input("PhoneNumber", dataSQL.PhoneNumber)
         .input("Gender", dataSQL.Gender)
         .input("Email", dataSQL.Email)
-        .input("HireDate", new Date(dataSQL.HireDate))
+        .input("HireDate", new Date(dataSQL.HireDate).toLocaleDateString())
         .input("DepartmentID", dataSQL.DepartmentID)
         .input("PositionID", dataSQL.PositionID)
         .input("Status", dataSQL.Status);
-
-      const sqlResult = await sqlRequest.query(sqlQuery);
+      const sqlResult = await sqlRequest.query(insertEmployeeSQl);
 
       // Thực thi MySQL
-      const [mysqlResult] = await mysqlConnection.query(mysqlQuery, [
+      const [mysqlResult] = await mysqlConnection.query(insertEmployeeMysql, [
         dataMysql.EmployeeID,
-        dataMysql.FullName,
+        dataMysql.FullName, 
         dataMysql.DepartmentID,
         dataMysql.PositionID,
       ]);
@@ -124,7 +109,6 @@ const employeeModel = {
       cb(error, null);
     }
   },
-  // Lấy thông tin nhân viên theo ID
   async getEmployeeById(id, cb) {
     try {
       const pool = await getSqlServerPool();
@@ -142,57 +126,164 @@ const employeeModel = {
       cb(error, null);
     }
   },
-  // get nhan vien theo email
     async getEmployeeByEmail(email, cb) {
         try {
         const pool = await getSqlServerPool();
         const { recordset } = await pool.query(
             `SELECT * FROM Employees WHERE Email = '${email}'`
         );
-       
-        if (recordset.length === 0 && mysql.length === 0) {
-            cb("Employee not found", null);
+       console.log("recordset", recordset.length);
+        // Kiểm tra xem có nhân viên nào không
+        if (recordset.length !== 0) {
+            cb(null,{});
+        }else{
+          cb(null, recordset );
         }
-        cb(null, recordset[0] || mysql[0]);
         } catch (error) {
         cb(error, null);
         }
     },
-    // delete nhân viên theo id
-    async deleteEmployeeById(id, cb) {
+    async deleteEmployeeByEmail(Email, cb) {
       try {
-          const pool = await getSqlServerPool();
-          let sqlResult = null;
-          let mysqlResult = null;
+          const pool = await getSqlServerPool(); // SQL Server connection
   
-          // Kiểm tra nhân viên có tồn tại không
-          const { recordset } = await pool.query(
-              `SELECT * FROM Employees WHERE EmployeeID = ${id}`
-          );
-          const [mysql] = await mysqlConnection.query(
-              `SELECT * FROM employees WHERE EmployeeID = ${id}`
-          );
+          // 1. Kiểm tra nhân viên có tồn tại trong SQL Server
+          const { recordset } = await pool.request()
+              .input("Email", `%${Email}%`)  // Sử dụng LIKE cho email
+              .query(`SELECT EmployeeID, FullName FROM Employees WHERE Email LIKE @Email`);
   
-          if (recordset.length !== 0) {
-              // 1. Xóa dữ liệu phụ trong Dividends trước
-              await pool.query(`DELETE FROM Dividends WHERE EmployeeID = ${id}`);
-              // 2. Sau đó mới xóa nhân viên trong Employees
-              sqlResult = await pool.query(`DELETE FROM Employees WHERE EmployeeID = ${id}`);
+          // Kiểm tra nếu không tìm thấy nhân viên trong SQL Server
+          if (recordset.length === 0) {
+              return cb( { message: "Không tìm thấy nhân viên với Email này trong SQL Server." } , null);
           }
   
-          if (mysql.length !== 0) {
-              // 1. Xóa dữ liệu phụ trong salaries trước (nếu có)
-              await mysqlConnection.query(`DELETE FROM salaries WHERE EmployeeID = ${id}`);
-              // 2. Sau đó mới xóa nhân viên trong employees
-              [mysqlResult] = await mysqlConnection.query(`DELETE FROM employees WHERE EmployeeID = ${id}`);
+          const fullName = recordset[0].FullName;  
+          const EmployeeID = recordset[0].EmployeeID;
+  
+          // 2. Kiểm tra nhân viên có tồn tại trong MySQL
+          const [mysqlResult] = await mysqlConnection.execute(
+              `SELECT EmployeeID, FullName FROM employees WHERE FullName LIKE ?`, 
+              [`%${fullName}%`]  // Truyền tham số FullName vào MySQL
+          );
+  
+          // Kiểm tra nếu không tìm thấy nhân viên trong MySQL
+          if (mysqlResult.length === 0) {
+              return cb({ message: "Không tìm thấy nhân viên với FullName này trong MySQL." } , null);
           }
   
-          cb(null, { sqlResult, mysqlResult });
+          // 3. Xóa các bản liên quan trong SQL Server (Devidend)
+          await pool.request()
+              .input("EmployeeID" ,EmployeeID)
+              .query(`DELETE FROM Dividends WHERE EmployeeID = @EmployeeID`);
+  
+          // 4. Xóa các bản liên quan trong MySQL (attendance, salaries)
+          await mysqlConnection.execute(`DELETE FROM attendance WHERE EmployeeID = ?`, [EmployeeID]);
+          await mysqlConnection.execute('DELETE FROM salaries WHERE EmployeeID = ?', [EmployeeID]);
+  
+          // 5. Xóa nhân viên trong SQL Server
+          await pool.request()
+              .input("Email",`%${Email}%`)
+              .query(`DELETE FROM Employees WHERE Email LIKE @Email`);
+  
+          // 6. Xóa nhân viên trong MySQL
+          await mysqlConnection.execute(`DELETE FROM employees WHERE FullName LIKE ?`, [`%${fullName}%`]);
+  
+          cb( { message: "Xóa nhân viên thành công." } , null);
       } catch (error) {
+        console.error("Error deleting employee:", error);
           cb(error, null);
       }
-  }
+  },
+  async updateEmployeeById( {EmployeeId ,FullName , DateOfBirth, PhoneNumber, HireDate, DepartmentID, PositionID, Status, Email , Gender},  cb){
+     try {
+
+        const pool = await getSqlServerPool();
+        const sqlRequest = pool.request()
+            .input("EmployeeId", EmployeeId)
+            .input("FullName", FullName)
+            .input("DateOfBirth", new Date(DateOfBirth))
+            .input("PhoneNumber", PhoneNumber)
+            .input("HireDate", new Date(HireDate))
+            .input("DepartmentID", DepartmentID)
+            .input("PositionID", PositionID)
+            .input("Status", Status)
+            .input("Email", Email)
+            .input("Gender" , Gender)
+        const sqlResult = await sqlRequest.query(updateEmployeeSQl);
+
+        const [mysqlResult] = await mysqlConnection.query(updateEmployeeMySQL, [
+         
+           FullName,
+           DepartmentID,
+            PositionID,
+            Status,
+            EmployeeId,
+        ]);
+
+        cb(null, {sqlResult, mysqlResult});
+
+     } catch (error) {
+        console.error("Error updating employee:", error);
+        cb(error, null);
+     }
+  },
+  async searchEmployee({ EmployeeID, FullName, DepartmentID, PositionID }, cb) {
+    try {
+      const pool = await getSqlServerPool();
+      const mysqlConnection = await getMySQLConnection(); // (giả sử bạn có sẵn hàm này)
   
+      const sqlQuery = `
+        SELECT * FROM Employees WHERE 1=1
+        ${EmployeeID ? `AND EmployeeID = '${EmployeeID}'` : ""}
+        ${FullName ? `AND FullName LIKE '%${FullName}%'` : ""}
+        ${DepartmentID ? `AND DepartmentID = '${DepartmentID}'` : ""}
+        ${PositionID ? `AND PositionID = '${PositionID}'` : ""}
+      `;
+      const mysqlQuery = `
+        SELECT * FROM employees WHERE 1=1
+        ${EmployeeID ? `AND EmployeeID = '${EmployeeID}'` : ""}
+        ${FullName ? `AND FullName LIKE '%${FullName}%'` : ""}
+        ${DepartmentID ? `AND DepartmentID = '${DepartmentID}'` : ""}
+        ${PositionID ? `AND PositionID = '${PositionID}'` : ""}
+      `;
+      // Query SQL Server
+      const { recordset } = await pool.query(sqlQuery);
+  
+      // Query MySQL
+      const [mysqlRows] = await mysqlConnection.query(mysqlQuery);
+  
+      // Gộp dữ liệu
+      const mergedData = recordset.map((row) => {
+        const mySQLEmployee = mysqlRows.find((emp) => emp.EmployeeID === row.EmployeeID);
+  
+        if (mySQLEmployee) {
+          return {
+            EmployeeID: `SS-${row.EmployeeID}`,
+            FullName: row.FullName,
+            DateOfBirth: row.DateOfBirth,
+            PhoneNumber: row.PhoneNumber,
+            HireDate: row.HireDate,
+            DepartmentID: row.DepartmentID,
+            PositionID: row.PositionID,
+            Status: row.Status,
+            CreatedAt: row.CreatedAt,
+            UpdatedAt: row.UpdatedAt,
+            // Bạn có thể thêm dữ liệu bên MySQL nếu cần
+            Salary: mySQLEmployee.Salary, 
+            Bonus: mySQLEmployee.Bonus
+          };
+        } else {
+          return null;
+        }
+      }).filter(item => item !== null); // Bỏ các phần tử null
+  
+      cb(null, mergedData);
+  
+    } catch (error) {
+      console.error("Error searching employee:", error);
+      cb(error, null);
+    }
+  }
 };
 
 module.exports = employeeModel;

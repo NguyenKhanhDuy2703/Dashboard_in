@@ -112,30 +112,31 @@ const payrollModel = {
       console.error("Error fetching employee by ID:", error.message);
       cb(error, null);
     }
-  }, async updatePayrollByEmployID ({Bonus , Deductions} , cb){
+  }, async updatePayrollByEmployID ({Bonus , Deductions , EmployeeID} , cb){
     try {
         const query = `
           UPDATE salaries
+           JOIN employees em ON salaries.EmployeeID = em.EmployeeID
           SET Bonus = ?,
-              Deductions = ?
-            JOIN employees em ON salaries.EmployeeID = em.EmployeeID
+              Deductions = ?,
+              NetSalary = BaseSalary + ? - ?
           WHERE em.EmployeeID = ?
          
         `;
   
         const pool = await getSqlServerPool();
+        // check if employee exists in SQL Server
         const resultSQLDepartment = await pool.request()
-        .input("EmployeeId", employeeId)
+        .input("EmployeeId", EmployeeID)
         .query("SELECT * FROM Employees WHERE EmployeeID = @EmployeeId", );
-         console.log(resultSQLDepartment.recordset)
+        
         if (resultSQLDepartment.recordset.length !== 0) {
-            const [rows] = await mysqlConnection.query(query, [Bonus, Deductions]);
+            const [rows] = await mysqlConnection.query(query, [Bonus, Deductions ,Bonus ,Deductions , EmployeeID]);
         }
     
       
         cb(null, { message: "Update payroll successfully" });
       } catch (error) {
-        console.error("Error updating payroll:", error.message);
         cb(error, null);
       }
   }
