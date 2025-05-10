@@ -17,6 +17,48 @@ const updateEmployeeSQl = `
             WHERE EmployeeID = @EmployeeId
         `
 
+const getAllEmployeesSQL = `
+  SELECT
+    e.EmployeeID,
+    e.FullName,
+    e.DateOfBirth,
+    e.PhoneNumber,
+    e.Gender,
+    e.Email,
+    e.HireDate,
+    e.DepartmentID,
+    d.DepartmentName,
+    e.PositionID,
+    p.PositionName,
+    e.Status
+  FROM Employees e
+  JOIN Departments d ON e.DepartmentID = d.DepartmentID
+  JOIN Positions p ON e.PositionID = p.PositionID
+  ORDER BY e.EmployeeID
+  OFFSET @offset ROWS
+  FETCH NEXT @pageSize ROWS ONLY
+`;
+const getEmployeesByIDSQL = `
+  SELECT
+    e.EmployeeID,
+    e.FullName,
+    e.DateOfBirth,
+    e.PhoneNumber,
+    e.Gender,
+    e.Email,
+    e.HireDate,
+    e.DepartmentID,
+    d.DepartmentName,
+    e.PositionID,
+    p.PositionName,
+    e.Status
+  FROM Employees e
+  JOIN Departments d ON e.DepartmentID = d.DepartmentID
+  JOIN Positions p ON e.PositionID = p.PositionID
+    WHERE e.EmployeeID = @EmployeeId
+`;
+
+
 // mysql query
 const insertEmployeeMysql = `   INSERT INTO employees (EmployeeID ,FullName, DepartmentID, PositionID) VALUES (?, ?, ? , ?)`
 const updateEmployeeMySQL = `
@@ -24,10 +66,24 @@ const updateEmployeeMySQL = `
             SET  FullName = ?, DepartmentID = ?, PositionID = ? , Status = ?
             WHERE EmployeeID = ?
         `
-
+const getAllEmployeesMySQL = `
+  SELECT 
+    e.EmployeeID, 
+    e.FullName, 
+    e.DepartmentID, 
+    d.DepartmentName, 
+    e.PositionID, 
+    p.PositionName 
+  FROM employees e
+  JOIN departments d ON e.DepartmentID = d.DepartmentID
+  JOIN positions p ON e.PositionID = p.PositionID
+`;
 module.exports = {
     insertEmployeeSQl,
     insertEmployeeMysql , 
     updateEmployeeSQl , 
-    updateEmployeeMySQL
+    updateEmployeeMySQL,
+    getAllEmployeesSQL , 
+    getAllEmployeesMySQL,
+    getEmployeesByIDSQL
 }

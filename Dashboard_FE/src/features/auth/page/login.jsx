@@ -1,75 +1,146 @@
 import { useState } from "react";
-import { FaRegEyeSlash, FaRegEye } from "react-icons/fa";
+import { FaRegEyeSlash, FaRegEye, FaEnvelope, FaLock, FaFingerprint } from "react-icons/fa";
+import { MdOutlineEmail } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import { login } from "../../../services/auth.services";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle login logic here
+    console.log({ email, password, rememberMe });
+    // Call the login function from auth.services.js
+    const fectchLogin = async () => {
+      const res =  await login(email, password)
+      if (res.status === 200) {
+        toast.success("Login successful!");
+        setTimeout(() => {
+          navigate("/");
+        }, 2000)
+      }else{
+        toast.error("Login failed! Please check your credentials.");
+      }
+     
+    }
+    fectchLogin();
+
+  };
 
   return (
-    <div className="w-full h-full p-10 flex flex-col justify-between">
-      <div className="flex items-center justify-between mb-6">
+    <>
+      {/* Header */}
+      <div>
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="light" />
+      </div>
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            Welcome back!
+            Welcome back
           </h2>
-          <h3 className="text-lg font-medium text-gray-600">Please Sign In</h3>
+          <p className="text-gray-600">Please sign in to continue</p>
         </div>
-        <button className="text-blue-600 border border-blue-600 px-4 py-1 rounded-md hover:bg-blue-50 transition text-sm">
-          Sign Up
-        </button>
+        <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+          <FaFingerprint className="h-6 w-6 text-blue-600" />
+        </div>
       </div>
 
-      <form>
-        <div className="mb-4">
-          <label className="block mb-1 text-sm font-medium text-gray-700">
-            Email address
-          </label>
-          <input
-            type="email"
-            placeholder="Enter email address"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+      {/* Login Form */}
+      <div className="mt-8">
+        <div className="space-y-6">
+          {/* Email Field */}
+          <div>
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              Email address
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <MdOutlineEmail className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
 
-        <div className="mb-4 relative">
-          <label className="block mb-1 text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="********"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-          />
+          {/* Password Field */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <a href="#" className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
+                Forgot password?
+              </a>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaLock className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? (
+                  <FaRegEyeSlash className="h-5 w-5" />
+                ) : (
+                  <FaRegEye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember Me */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="remember"
+              checked={rememberMe}
+              onChange={() => setRememberMe(!rememberMe)}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="remember" className="ml-2 text-sm text-gray-600">
+              Remember me
+            </label>
+          </div>
+          
+          {/* Login Button */}
           <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute top-[36px] right-3 text-gray-500"
+            onClick={handleSubmit}
+            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:opacity-90"
           >
-            {showPassword ? (
-              <FaRegEye className="w-5 h-5" />
-            ) : (
-              <FaRegEyeSlash className="w-5 h-5" />
-            )}
+            Sign In
           </button>
+          
+          {/* Sign Up Link */}
+          <div className="text-center mt-4">
+            <span className="text-gray-600 text-sm">Don't have an account? </span>
+            <a href="#" className="text-blue-600 text-sm font-medium hover:text-blue-800 hover:underline">
+              Sign up now
+            </a>
+          </div>
         </div>
-
-        <div className="flex items-center justify-between mb-6">
-          <label className="flex items-center text-sm text-gray-600">
-            <input type="checkbox" className="mr-2" />
-            Remember me
-          </label>
-          <a href="#" className="text-sm text-blue-600 hover:underline">
-            I forgot my password
-          </a>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-2 rounded-lg font-semibold hover:opacity-90 transition"
-        >
-          Sign In
-        </button>
-      </form>
-    </div>
+      </div>
+    </>
   );
+  
 };
 
 export default Login;

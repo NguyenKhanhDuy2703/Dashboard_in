@@ -1,4 +1,4 @@
-const getUserbyAccountQuery = "SELECT * FROM users WHERE account = ? ";
+const getUserbyAccountQuery = "SELECT * FROM users WHERE email = ? ";
 
 
 module.exports = {

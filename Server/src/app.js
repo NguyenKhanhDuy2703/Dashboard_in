@@ -5,7 +5,7 @@ const port  = 4000;
 const routes = require("./routes/index")
 const cookieParser = require("cookie-parser")
 const corsOptions = {
-    origin: 'http://localhost:3000', // Đảm bảo URL này khớp với frontend của bạn
+    origin: 'http://localhost:5173', // Đảm bảo URL này khớp với frontend của bạn
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true, // Nếu bạn đang gửi cookie hoặc xác thực
   };

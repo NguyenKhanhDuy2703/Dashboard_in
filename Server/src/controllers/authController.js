@@ -3,14 +3,14 @@ const { renderToken } = require("../utils/token")
 // request , response
 const LoginController =   async( req , res) => {
     try {
-        const { account , password } = req.body
-    if (!account || !password) {
+        const { email , password } = req.body
+    if (!email || !password) {
         return res.status(400).json({
-            message: "Account and password are required"
+            message: "email and password are required"
         })
     }
     // model
-   await authUserModel.getUserByAccount( account , (err , data) =>{
+   await authUserModel.getUserByEmail( email , (err , data) =>{
         if(err){
             return res.status(500).json({
                 message: err.message 
@@ -24,7 +24,6 @@ const LoginController =   async( req , res) => {
         const token = renderToken(data);
         res.cookie("sessionToken", token, {
             httpOnly: true,
-            secure: true,
             sameSite: "lax",
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });

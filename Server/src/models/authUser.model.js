@@ -1,10 +1,10 @@
 const {authMysqlConnection}  = require("../config/config")
 const {getUserbyAccountQuery} = require("../repositories/auth.query")
 const authUserModel = {
-    async getUserByAccount ( account , cb){
+    async getUserByEmail( email , cb){
      
         try {
-            const [user] = await  authMysqlConnection.query(getUserbyAccountQuery, [account ]);
+            const [user] = await  authMysqlConnection.query(getUserbyAccountQuery, [email ]);
             cb(null, user[0]);
         } catch (error) {
             cb(error, null);

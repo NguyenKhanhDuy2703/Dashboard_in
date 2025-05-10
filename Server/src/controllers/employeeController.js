@@ -1,7 +1,12 @@
 const employeeModel = require("../models/employee.model");
 
 const getAllEmployeesController = (req, res) => {
-  employeeModel.getAllEmployees((err, data) => {
+  let { page , limit  } = req.query;
+  console.log("limit", limit);
+  if (isNaN(page) || page < 1) page = 1;
+  if (isNaN(limit) || limit < 1) limit = 19;
+
+  employeeModel.getAllEmployees({ page, limit }, (err, data) => {
     try {
       if (err) {
         return res.status(500).json({
@@ -15,7 +20,8 @@ const getAllEmployeesController = (req, res) => {
       }
       return res.status(200).json({
         message: "Get all employees success",
-        data: data,
+        data: data, 
+        
       });
     } catch (error) {
       return res.status(500).json({
@@ -24,9 +30,10 @@ const getAllEmployeesController = (req, res) => {
     }
   });
 };
+
 const getEmployeeByIdController = (req, res) => {
-  const { id } = req.query;
-  employeeModel.getEmployeeById(id, (err, data) => {
+  const { EmployeeID } = req.query;
+  employeeModel.getEmployeeById(EmployeeID, (err, data) => {
     try {
       if (err) {
         return res.status(500).json({
@@ -61,6 +68,7 @@ const addNewEmployeeController = (req, res) => {
     Email,
     Gender
   } = req.body;
+  console.log("req.body", req.body);
   try {
     if (
       !FullName ||
@@ -69,7 +77,6 @@ const addNewEmployeeController = (req, res) => {
       !HireDate ||
       !DepartmentID ||
       !PositionID ||
-      !Status ||
       !Email ||
       !Gender
     ) {
@@ -85,7 +92,7 @@ const addNewEmployeeController = (req, res) => {
       HireDate,
       DepartmentID,
       PositionID,
-      Status,
+      Status :"Active",
       Email,
       Gender
     };
@@ -121,8 +128,9 @@ const addNewEmployeeController = (req, res) => {
   }
 };
 const deleteEmployeeController = (req, res) => {
-  const { Email } = req.body;
-  employeeModel.deleteEmployeeByEmail(Email, (err, data) => {
+  const { EmployeeID } = req.body;
+  console.log("EmployeeId", EmployeeID);
+  employeeModel.deleteEmployeeById(EmployeeID, (err, data) => {
     try {
 
       if (err) {
@@ -148,7 +156,7 @@ const deleteEmployeeController = (req, res) => {
 };
 const updateEmployeeController = (req, res) => {
   const {
-    EmployeeId,
+    EmployeeID,
     FullName,
     Gender,
     DateOfBirth,
@@ -161,7 +169,7 @@ const updateEmployeeController = (req, res) => {
   } = req.body;
   employeeModel.updateEmployeeById(
     {
-      EmployeeId,
+      EmployeeID,
       FullName,
       DateOfBirth,
       PhoneNumber,

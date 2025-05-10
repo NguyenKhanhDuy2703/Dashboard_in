@@ -1,45 +1,80 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-
-const staffData = Array(8).fill({
-  id: "01",
-  fullName: "Sandra",
-  dob: "10/04/2004",
-  gender: "Female",
-  hireDate: "10/04/2004",
-  email: "Example@gmail.com",
-  phone: "081300000000",
-  position: "Admin",
-  department: "Human Resources",
-  status: "Working",
-});
-
+import { useDispatch, useSelector } from "react-redux";
+import { fetchEmployees, setPage } from "../employeeSlice";
+import Pagination from "../../../components/common/Pagination";
+import {deleteEmployee} from "../../../services/employee.sevices"
+import { toast } from "react-toastify";
+import FloatingLoader from "../../../components/common/loading";
 const StaffTable = () => {
-  const [rowsPerPage, setRowsPerPage] = useState(12);
   const [activeMenuIndex, setActiveMenuIndex] = useState(null);
+  const menuRefs = useRef([]);
+  const dispatch = useDispatch();
+  const [loading , setLoading] = useState(false);
+
+  const { employees = [], page, totalPage } = useSelector((state) => state.employees);
+
+  const handlePageChange = async (newPage) => {
+    try {
+      const res = await dispatch(fetchEmployees({ page: newPage, limit: 20 }));
+      if (res.error) {
+        console.error("Failed to fetch employees:", res.error);
+      } else {
+        dispatch(setPage(newPage));
+      }
+    } catch (error) {
+      console.error("Failed to fetch staff data:", error);
+    }
+  };
+
+  useEffect(() => {
+    handlePageChange(1);
+  }, [dispatch]);
 
   const toggleMenu = (index) => {
     setActiveMenuIndex((prev) => (prev === index ? null : index));
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        activeMenuIndex !== null &&
+        menuRefs.current?.[activeMenuIndex] &&
+        !menuRefs.current[activeMenuIndex].contains(event.target)
+      ) {
+        setActiveMenuIndex(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [activeMenuIndex]);
+  /// delete nhan vien 
+  const handleDelete = async (EmployeeID) => {
+    if (!window.confirm("Are you sure you want to delete this employee?")) {
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await deleteEmployee(EmployeeID);
+      
+      if (res.status === 200) {
+        toast.success("Delete employee successfully");
+        await dispatch(fetchEmployees({ page, limit: 20 }));
+      }
+    } catch (error) {
+      console.error("Failed to delete employee:", error);
+    }finally
+    {
+      setLoading(false);
+    }
+  };
+  if(loading) { 
+    return (
+        <FloatingLoader />
+    )
+  }else{
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm w-full relative">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">All Staff</h2>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <span>Showing</span>
-          <input
-            type="number"
-            className="w-16 border border-gray-300 rounded-md px-2 py-1 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={rowsPerPage}
-            onChange={(e) => setRowsPerPage(Number(e.target.value))}
-          />
-          <span>per page</span>
-        </div>
-      </div>
-
-      {/* Table */}
+    <div className="bg-white rounded-xl shadow-sm w-full relative p-5">
       <div className="overflow-x-auto rounded-md border border-gray-200 relative">
         <table className="min-w-full text-sm text-gray-800">
           <thead className="bg-gray-50 text-blue-700 font-medium">
@@ -64,63 +99,71 @@ const StaffTable = () => {
             </tr>
           </thead>
           <tbody>
-            {staffData.map((staff, index) => (
-              <tr
-                key={index}
-                className="border-t border-gray-100 hover:bg-blue-50 transition-colors relative"
-              >
-                <td className="px-4 py-2">{staff.id}</td>
-                <td className="px-4 py-2">{staff.fullName}</td>
-                <td className="px-4 py-2">{staff.dob}</td>
-                <td className="px-4 py-2">{staff.gender}</td>
-                <td className="px-4 py-2">{staff.hireDate}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{staff.email}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{staff.phone}</td>
-                <td className="px-4 py-2">{staff.position}</td>
-                <td className="px-4 py-2">{staff.department}</td>
-                <td className="px-4 py-2">
-                  <span className="inline-block text-green-700 text-xs bg-green-100 px-2 py-0.5 rounded-full">
-                    {staff.status}
-                  </span>
-                </td>
-                <td className="px-4 py-2">
-                  <button
-                    className="text-blue-600 hover:underline text-sm font-medium"
-                    onClick={() => toggleMenu(index)}
-                  >
-                    More
-                  </button>
-                  {activeMenuIndex === index && (
-                    <div className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg w-32 z-20">
-                      <ul className="text-sm text-gray-700">
-                        <Link to={"/edit-staff"} className="px-4 py-2 hover:bg-blue-50 cursor-pointer">Edit</Link>
-                        <li className="px-4 py-2 hover:bg-blue-50 cursor-pointer">Delete</li>
-                      </ul>
+            {Array.isArray(employees) &&
+              employees.map((staff, index) => (
+                <tr
+                  key={staff.EmployeeID}
+                  className="border-t border-gray-100 hover:bg-blue-50 transition-colors"
+                >
+                  <td className="px-4 py-2">{staff.EmployeeID}</td>
+                  <td className="px-4 py-2">{staff.FullName}</td>
+                  <td className="px-4 py-2">{staff.DateOfBirth}</td>
+                  <td className="px-4 py-2">{staff.Gender}</td>
+                  <td className="px-4 py-2">{staff.HireDate}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">{staff.Email}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">{staff.PhoneNumber}</td>
+                  <td className="px-4 py-2">{staff.Position}</td>
+                  <td className="px-4 py-2">{staff.Department}</td>
+                  <td className="px-4 py-2">
+                    <span className="inline-block text-green-700 text-xs bg-green-100 px-2 py-0.5 rounded-full">
+                      {staff.Status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 relative">
+                    <div
+                      ref={(el) => (menuRefs.current[index] = el)}
+                      className="relative"
+                    >
+                      <button
+                        className="text-blue-600 hover:underline text-sm font-medium"
+                        onClick={() => toggleMenu(index)}
+                      >
+                        More
+                      </button>
+                      {activeMenuIndex === index && (
+                        <div className="absolute bottom-0 right-0 transform translate-y-full bg-white border border-gray-200 rounded-md shadow-lg w-32 z-20">
+                          <ul className="text-sm text-gray-700">
+                            <li>
+                              <Link
+                                to={`/edit-staff/${staff.EmployeeID}`}
+                                className="block px-4 py-2 hover:bg-blue-50 cursor-pointer"
+                              >
+                                Edit
+                              </Link>
+                            </li>
+                            <button className="px-4 py-2 hover:bg-blue-50 cursor-pointer" onClick={()=> handleDelete(staff.EmployeeID)}>
+                              Delete
+                            </button>
+                          </ul>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
-      <div className="mt-5 flex justify-end items-center gap-2 text-sm">
-        {[1, 2, 3, 4, 5].map((page) => (
-          <button
-            key={page}
-            className="px-3 py-1.5 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-100 transition"
-          >
-            {page}
-          </button>
-        ))}
-        <button className="px-3 py-1.5 rounded-md border border-blue-500 text-blue-600 hover:bg-blue-100 transition">
-          &gt;&gt;
-        </button>
+      <div className="mt-4">
+        <Pagination
+          currentPage={page}
+          totalPages={totalPage}
+          onPageChange={handlePageChange}
+        />
       </div>
     </div>
   );
-};
-
-export default StaffTable
+}
+}
+export default StaffTable;

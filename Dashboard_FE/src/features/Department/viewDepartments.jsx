@@ -1,37 +1,25 @@
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
+import {getAllDepartmentAndJobs} from "../../services/department.server"
 export default function ManagementTables() {
-  const [selectedDepartment, setSelectedDepartment] = useState(4);
-  const [selectedJob, setSelectedJob] = useState(4);
-  
-  const departmentData = [
-    { id: 1, title: "Managing Director" },
-    { id: 2, title: "Executive Director" },
-    { id: 3, title: "General Manager" },
-    { id: 4, title: "Deputy General Manager" },
-    { id: 5, title: "Asst. General Manager" },
-    { id: 6, title: "Principal Manager" },
-    { id: 7, title: "Senior Manager" },
-    { id: 8, title: "Manager" },
-    { id: 9, title: "Deputy Manager" },
-    { id: 10, title: "Asst. Manager" },
-    { id: 11, title: "Snr. Executive Officer" }
-  ];
-
-  const jobTitleData = [
-    { id: 1, title: "Managing Director" },
-    { id: 2, title: "Executive Director" },
-    { id: 3, title: "General Manager" },
-    { id: 4, title: "Deputy General Manager" },
-    { id: 5, title: "Asst. General Manager" },
-    { id: 6, title: "Principal Manager" },
-    { id: 7, title: "Senior Manager" },
-    { id: 8, title: "Manager" },
-    { id: 9, title: "Deputy Manager" },
-    { id: 10, title: "Asst. Manager" },
-    { id: 11, title: "Snr. Executive Officer" }
-  ];
-
+  const [departments , setDepartments] = useState([]);
+  const [jobTitles , setJobTitles] = useState([]);
+  const [loading, setLoading] = useState(false);
+useEffect(() => {
+  setLoading(true);
+  const fetchDataDepartmentAndJob = async () => {
+    try{
+      const response = await getAllDepartmentAndJobs();
+      setDepartments(response.data.departments);
+      setJobTitles(response.data.jobTitles);
+      // Handle the response data as needed
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setLoading(false);
+    } 
+  }
+  fetchDataDepartmentAndJob();
+} , [])
   return (
     <div className="flex flex-col md:flex-row gap-6 p-4 bg-gray-50 min-h-screen">
       {/* Department Management Table */}
@@ -46,18 +34,16 @@ export default function ManagementTables() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {departmentData.map((item) => (
+              {departments.map((item) => (
                 <tr 
                   key={item.id} 
-                  className={`hover:bg-gray-50 cursor-pointer ${item.id === selectedDepartment ? 'bg-blue-50' : ''}`}
-                  onClick={() => setSelectedDepartment(item.id)}
+                  className="hover:bg-gray-50 cursor-pointer "
+                 
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.id.toString().padStart(2, '0')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex justify-between items-center">
                     {item.title}
-                    {item.id === selectedDepartment && (
-                      <div className="w-1 h-full bg-blue-500 absolute right-0"></div>
-                    )}
+                   
                   </td>
                 </tr>
               ))}
@@ -78,18 +64,16 @@ export default function ManagementTables() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {jobTitleData.map((item) => (
+              {jobTitles.map((item) => (
                 <tr 
                   key={item.id} 
-                  className={`hover:bg-gray-50 cursor-pointer ${item.id === selectedJob ? 'bg-blue-50' : ''}`}
-                  onClick={() => setSelectedJob(item.id)}
+                  className="hover:bg-gray-50 cursor-pointer"
+             
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.id.toString().padStart(2, '0')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex justify-between items-center">
                     {item.title}
-                    {item.id === selectedJob && (
-                      <div className="w-1 h-full bg-blue-500 absolute right-0"></div>
-                    )}
+                  
                   </td>
                 </tr>
               ))}
