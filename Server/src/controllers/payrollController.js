@@ -1,8 +1,9 @@
 const payrollModel = require('../models/payroll.model');
 
 const getAllPayrollController = (req, res) => {
-    
-    payrollModel.getAllPayrollFollowingEmployee((err, result) => {
+    const { page, limit  , monthSalary} = req.query;
+    console.log("monthSalary", monthSalary);
+    payrollModel.getAllPayrollFollowingEmployee( {page, limit  , monthSalary} , (err, result) => {
         if (err) {
             console.error('Error fetching attendance:', err);
             return res.status(500).json({ error: 'Error fetching attendance' });
@@ -13,7 +14,7 @@ const getAllPayrollController = (req, res) => {
         res.status(200).json(
            {
             message :'Get attendance successfully',
-            payrolls : result
+            data : result
            }
            );
     });

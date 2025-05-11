@@ -1,58 +1,86 @@
 const { getSqlServerPool, mysqlConnection } = require("../config/config");
 
 const payrollModel = {
-  async getAllPayrollFollowingEmployee(cb) {
-    try {
-      const query = `
-        SELECT 
-          em.EmployeeID,
-          em.FullName,
-          de.DepartmentName,
-          po.PositionName,
-          sa.SalaryMonth,
-          sa.BaseSalary,
-          sa.Bonus,
-          sa.Deductions,
-          sa.NetSalary
-        FROM employees em
-        LEFT JOIN departments de ON em.DepartmentID = de.DepartmentID
-        LEFT JOIN positions po ON em.PositionID = po.PositionID
-        LEFT JOIN salaries sa ON em.EmployeeID = sa.EmployeeID
-      `;
+ async getAllPayrollFollowingEmployee({ page , limit , monthSalary }, cb) {
+  try {
+    const offset = (page - 1) * limit;
 
-      const pool = await getSqlServerPool();
-      const resultSQLDepartment = await pool.request().query("SELECT * FROM Employees");
+    let query = `
+      SELECT 
+        em.EmployeeID,
+        em.FullName,
+        de.DepartmentName,
+        po.PositionName,
+        sa.SalaryMonth,
+        sa.BaseSalary,
+        sa.Bonus,
+        sa.Deductions,
+        sa.NetSalary
+      FROM employees em
+      LEFT JOIN departments de ON em.DepartmentID = de.DepartmentID
+      LEFT JOIN positions po ON em.PositionID = po.PositionID
+      LEFT JOIN salaries sa ON em.EmployeeID = sa.EmployeeID
+    `;
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM employees em
+      LEFT JOIN salaries sa ON em.EmployeeID = sa.EmployeeID
+    `;
 
-      const [rows] = await mysqlConnection.query(query);
-
-      const mergedEmployees = resultSQLDepartment.recordset
-        .map((item) => {
-          const mysqlEmployee = rows.find(
-            (row) => row.EmployeeID === item.EmployeeID && row.FullName === item.FullName
-          );
-          if (mysqlEmployee) {
-            return {
-              ...item,
-              DepartmentName: mysqlEmployee.DepartmentName,
-              PositionName: mysqlEmployee.PositionName,
-              SalaryMonth: mysqlEmployee.SalaryMonth,
-              BaseSalary: mysqlEmployee.BaseSalary,
-              Bonus: mysqlEmployee.Bonus,
-              Deductions: mysqlEmployee.Deductions,
-              NetSalary: mysqlEmployee.NetSalary,
-            };
-          } else {
-            return null;
-          }
-        })
-        .filter((item) => item !== null); // ✅ đúng: filter
-
-      cb(null, { payrolls: mergedEmployees });
-    } catch (error) {
-      console.error("Error fetching salary:", error.message);
-      cb(error, null);
+    const params = [];
+    if ( monthSalary!== undefined && monthSalary !== null) {
+      query += ` WHERE Month(sa.SalaryMonth) = ?`;
+      countQuery += ` WHERE Month(sa.SalaryMonth) = ?`;
+      params.push(monthSalary);
     }
-  },
+
+    query += ` LIMIT ? OFFSET ?`;
+    params.push(parseInt(limit), parseInt(offset));
+
+    const pool = await getSqlServerPool();
+    const resultSQLDepartment = await pool.request().query("SELECT * FROM Employees");
+
+    const [[{ total }]] = await mysqlConnection.query(countQuery, monthSalary ? [monthSalary] : []);
+    const [rows] = await mysqlConnection.query(query, params);
+
+    const mergedEmployees = resultSQLDepartment.recordset
+      .map((item) => {
+        const mysqlEmployee = rows.find(
+          (row) => row.EmployeeID === item.EmployeeID && row.FullName === item.FullName
+        );
+        if (mysqlEmployee) {
+          return {
+            EmployeeID: item.EmployeeID,
+            FullName: item.FullName,
+            DepartmentName: mysqlEmployee.DepartmentName,
+            PositionName: mysqlEmployee.PositionName,
+            SalaryMonth: new Date(mysqlEmployee.SalaryMonth).toLocaleDateString("vi-VN"),
+            BaseSalary: mysqlEmployee.BaseSalary,
+            Bonus: mysqlEmployee.Bonus,
+            Deductions: mysqlEmployee.Deductions,
+            NetSalary: mysqlEmployee.NetSalary,
+          };
+        } else {
+          return null;
+        }
+      })
+      .filter((item) => item !== null);
+
+    cb(null, {
+      payrolls: mergedEmployees,
+      pagination: {
+        currentPage: parseInt(page),
+        pageSize: parseInt(limit),
+        totalItems: total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching salary:", error.message);
+    cb(error, null);
+  }
+}
+,
   async getEmployeeById(employeeId, cb) {
     try {
       const query = `

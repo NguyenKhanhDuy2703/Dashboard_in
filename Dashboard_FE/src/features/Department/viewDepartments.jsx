@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {getAllDepartmentAndJobs} from "../../services/department.server"
+import FloatingLoader from '../../components/common/loading';
 export default function ManagementTables() {
   const [departments , setDepartments] = useState([]);
   const [jobTitles , setJobTitles] = useState([]);
@@ -9,17 +10,25 @@ useEffect(() => {
   const fetchDataDepartmentAndJob = async () => {
     try{
       const response = await getAllDepartmentAndJobs();
-      setDepartments(response.data.departments);
-      setJobTitles(response.data.jobTitles);
+      console.log(response);
+      setDepartments(response.departments);
+      setJobTitles(response.positions);
       // Handle the response data as needed
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
       setLoading(false);
-    } 
+    } finally {
+      setLoading(false);
+    }
   }
   fetchDataDepartmentAndJob();
 } , [])
+  if (loading) {
+    return (
+     <FloatingLoader />
+    );
+  }
   return (
     <div className="flex flex-col md:flex-row gap-6 p-4 bg-gray-50 min-h-screen">
       {/* Department Management Table */}
@@ -36,13 +45,13 @@ useEffect(() => {
             <tbody className="bg-white divide-y divide-gray-200">
               {departments.map((item) => (
                 <tr 
-                  key={item.id} 
+                  key={item.DepartmentID} 
                   className="hover:bg-gray-50 cursor-pointer "
                  
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.DepartmentID}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex justify-between items-center">
-                    {item.title}
+                    {item.DepartmentName}
                    
                   </td>
                 </tr>
@@ -59,20 +68,20 @@ useEffect(() => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">S/N</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">ID</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {jobTitles.map((item) => (
                 <tr 
-                  key={item.id} 
+                  key={item.PositionID} 
                   className="hover:bg-gray-50 cursor-pointer"
              
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.PositionID}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex justify-between items-center">
-                    {item.title}
+                    {item.PositionName}
                   
                   </td>
                 </tr>

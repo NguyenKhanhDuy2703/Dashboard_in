@@ -1,87 +1,151 @@
+import { useEffect, useState } from "react";
+import { Search, FileText, Download, } from "lucide-react";
+import { useDispatch , useSelector } from "react-redux";
+import {fetchPayrolls} from"../payrollSlice"
+import FloatingLoader from "../../../components/common/loading";
+import Pagination from "../../../components/common/Pagination";
 
-const sampleData = Array.from({ length: 8 }).map((_, i) => ({
-  id: `0${i + 1}`,
-  fullName: `Staff ${i + 1}`,
-  dept: "MD/CEO",
-  position: "IT",
-  salaryMonth: "April 2025",
-  baseSalary: 40000,
-  bonus: 20000,
-  netSalary: 55000,
-  deduction: 5000,
-}));
 
 export default function ViewPayroll() {
+  const [displayData, setDisplayData] = useState([]);
 
-  const displayData = sampleData;
+const dispatch = useDispatch();
 
+const { payrolls, currentPage, totalPages, pageSize, loading } = useSelector((state) => state.payroll);
+
+const onPageChange = (page) => {
+const fetchData = async () => {
+  try {
+    await dispatch(fetchPayrolls({ page: page , monthSalary: null}));
+    setDisplayData(payrolls);
+  } catch (error) {
+    console.error("Error fetching payroll data:", error);
+  }
+}
+  fetchData();
+};
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      await dispatch(fetchPayrolls({ page: currentPage , monthSalary: null}));
+      setDisplayData(payrolls);
+    } catch (error) {
+      console.error("Error fetching payroll data:", error);
+    }
+  };
+
+  fetchData();
+},[dispatch, currentPage, pageSize]);
+    
+if (loading) {
+    return (
+      <FloatingLoader />
+    );
+  }
   return (
     <>
-
-      <div className="overflow-x-auto bg-white shadow rounded-md">
-        <table className="min-w-full">
-          <thead className="bg-indigo-100 text-indigo-800">
-            <tr>
-              {[
-                "ID",
-                "Full Name",
-                "Department",
-                "Position",
-                "Salary Month",
-                "Base Salary",
-                "Bonus",
-                "Net Salary",
-                "Deduction",
-                "Action",
-              ].map((header) => (
-                <th
-                  key={header}
-                  className="p-3 text-sm font-semibold border-b border-gray-200 text-left"
-                >
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {displayData.map((row, idx) => (
-              <tr
-                key={idx}
-                className="even:bg-gray-50 hover:bg-indigo-50 transition"
-              >
-                <td className="p-3 border-b border-gray-200">{row.id}</td>
-                <td className="p-3 border-b border-gray-200">{row.fullName}</td>
-                <td className="p-3 border-b border-gray-200">{row.dept}</td>
-                <td className="p-3 border-b border-gray-200">{row.position}</td>
-                <td className="p-3 border-b border-gray-200">
-                  {row.salaryMonth}
-                </td>
-                <td className="p-3 border-b border-gray-200">
-                  {row.baseSalary.toLocaleString()}
-                </td>
-                <td className="p-3 border-b border-gray-200">
-                  {row.bonus.toLocaleString()}
-                </td>
-                <td className="p-3 border-b border-gray-200">
-                  {row.netSalary.toLocaleString()}
-                </td>
-                <td className="p-3 border-b border-gray-200">
-                  {row.deduction.toLocaleString()}
-                </td>
-                <td className="p-3 border-b border-gray-200 text-indigo-600 font-semibold cursor-pointer hover:underline">
-                  Edit
-                </td>
+      {/* Table Section - Enhanced */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden mt-6 border border-gray-100">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+          <h3 className="font-semibold text-gray-700">Employee Payroll Details</h3>
+          <p className="text-sm text-gray-500">April 2025 Pay Period</p>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                {[
+                  { key: "id", label: "ID" },
+                  { key: "fullName", label: "Full Name" },
+                  { key: "dept", label: "Department" },
+                  { key: "position", label: "Position" },
+                  { key: "salaryMonth", label: "Salary Month" },
+                  { key: "baseSalary", label: "Base Salary" },
+                  { key: "bonus", label: "Bonus" },
+                  { key: "netSalary", label: "Net Salary" },
+                  { key: "deduction", label: "Deduction" },
+                  { key: "action", label: "Action" }
+                ].map((column) => (
+                  <th
+                    key={column.key}
+                    className={`px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${column.key !== "action" ? "cursor-pointer" : ""}`}
+                  >
+                    <div className="flex items-center">
+                      {column.label}
+                    </div>
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {displayData.length > 0 ? (
+                displayData.map((row, idx) => (
+                  <tr
+                    key={idx}
+                    className="hover:bg-indigo-50 transition-colors"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">#{row.EmployeeID}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        
+                        <div className="ml-3">
+                          <p className="text-sm font-medium text-gray-900">{row.FullName}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.DepartmentName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.PositionName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.SalaryMonth}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.BaseSalary.toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">${row.Bonus.toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${row.Deductions.toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">${row.Deductions.toLocaleString()}</td>
+                    
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex space-x-2">
+                        <button className="text-indigo-600 hover:text-indigo-900 font-medium">Edit</button>
+                        <span className="text-gray-300">|</span>
+                        <button className="text-gray-600 hover:text-gray-900">View</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="11" className="px-6 py-4 text-center text-sm text-gray-500">
+                    No payroll records found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        
+        </div>
+        
+        
       </div>
-
-      <div className="mt-6 flex justify-between items-center">
-        <button className="bg-indigo-600 text-white px-5 py-2 rounded-md shadow hover:bg-indigo-700 transition">
-          📄 Export Excel/PDF
+      {/* currentPage, totalPages, onPageChange */}
+      <Pagination   currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}  className="mt-4"
+           />
+      {/* Export Actions - Enhanced */}
+      <div className="flex flex-wrap gap-3 mt-6">
+        <button className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg shadow hover:bg-indigo-700 transition">
+          <Download size={18} />
+          Export Excel
         </button>
-  
+        <button className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-lg shadow hover:bg-red-700 transition">
+          <FileText size={18} />
+          Export PDF
+        </button>
+        <button className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg shadow hover:bg-gray-50 transition">
+          Email Reports
+        </button>
+        <button className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg shadow hover:bg-gray-50 transition ml-auto">
+          Print Payroll
+        </button>
       </div>
     </>
   );

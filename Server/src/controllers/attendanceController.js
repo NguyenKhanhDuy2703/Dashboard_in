@@ -1,6 +1,7 @@
 const attendanceModel = require('../models/addtendance.model');
 const getAllAttendanceController = (req, res) => {
-    attendanceModel.getAllAttendance((err, result) => {
+    const { page, limit } = req.query;
+    attendanceModel.getAllAttendance({ page, limit },(err, result) => {
         if (err) {
             console.error('Error fetching attendance:', err);
             return res.status(500).json({ error: 'Error fetching attendance' });
