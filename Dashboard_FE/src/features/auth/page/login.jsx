@@ -11,27 +11,44 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log({ email, password, rememberMe });
-    // Call the login function from auth.services.js
+    setIsLoading(true);
+    if (!email || !password) {
+      toast.error("Please fill in all fields.");
+      setIsLoading(false);
+      return;
+    }
     const fectchLogin = async () => {
-      const res =  await login(email, password)
-      if (res.status === 200) {
-        toast.success("Login successful!");
+      try {
+        const response = await login({ email, password });
+         console.log(response);
+        if (response.status === 200) {
+          toast.success("Login successful!");
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
+        } else 
+        if (response.status === 401) {
+          toast.error("Invalid email or password.");
+        } 
+       else if(response.status === 500) {
+          toast.error("your account not authorized");
+        }
+       
+      } catch (error) {
+        toast.error(error.message ," Please try again.");
+      } finally {
         setTimeout(() => {
-          navigate("/");
-        }, 2000)
-      }else{
-        toast.error("Login failed! Please check your credentials.");
+          setIsLoading(false);
+        }, 2000);
       }
-     
     }
     fectchLogin();
 
   };
-
+ 
   return (
     <>
       {/* Header */}

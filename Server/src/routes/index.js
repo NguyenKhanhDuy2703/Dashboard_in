@@ -8,12 +8,12 @@ const { authenticationToken , authenticatioRole } = require ("../middleware/auth
 const report = require('./report')
 function routes(app) {
 app.use('/api/auth', auth);
-app.use('/api/employee', employee);
-app.use('/api/department',department)
-app.use('/api/payroll', payroll)
-app.use('/api/attendance', attendance);
-app.use('/api/notification', notification);
-app.use('/api/report',report)
+app.use('/api/employee',authenticationToken ,  employee);
+app.use('/api/department',authenticationToken ,authenticatioRole(["Admin"]) , department)
+app.use('/api/payroll',authenticationToken ,authenticatioRole(["Admin"]) ,  payroll)
+app.use('/api/attendance', authenticationToken ,authenticatioRole(["Admin"]) , attendance);
+app.use('/api/notification',authenticationToken , authenticatioRole(["Admin"]) ,notification);
+app.use('/api/report',authenticationToken ,authenticatioRole(["Admin"]) ,  report)
 app.get('/api/get-token',authenticationToken,authenticatioRole(["Admin" , "Employee" , "HR_Manager" , "Payroll_Manager"]),(req, res) => {
      return res.status(200).json({
         message: "Get token success",

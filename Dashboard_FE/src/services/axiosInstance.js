@@ -6,6 +6,7 @@ const axiosInstance = axios.create({
     withCredentials: true, // Để gửi cookie cùng với yêu cầu
     headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("accessToken")}`, // Lấy accessToken từ localStorage
     },
 });
 export default axiosInstance;

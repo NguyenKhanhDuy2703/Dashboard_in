@@ -4,8 +4,13 @@ import {getToken} from "../../services/auth.services"
 export const fetchUser = createAsyncThunk(
     'auth/fetchUser', 
     async () => {
-        const response = await getToken();
+     try {
+           const response = await getToken();
         return response.user; // trả về dữ liệu người dùng
+     }
+        catch (error) {
+            return error.response; // Trả về phản hồi lỗi từ server
+        }
     }
 );
  const authSlice = createSlice ({
@@ -25,8 +30,8 @@ export const fetchUser = createAsyncThunk(
                 state.loading = true; // Đang tải dữ liệu
             })
             .addCase(fetchUser.fulfilled, (state, action) => {
-                state.user = action.payload.email; // Lưu thông tin người dùng vào state
-                state.role = action.payload.role; // Lưu vai trò người dùng vào state
+                state.user = action.payload.email || ""; // Lưu thông tin người dùng vào state
+                state.role = action.payload.role||""; // Lưu vai trò người dùng vào state
                 state.accessToken = action.payload.accessToken; // Lưu accessToken vào state
                 state.loading = false; // Kết thúc quá trình tải dữ liệu
             })

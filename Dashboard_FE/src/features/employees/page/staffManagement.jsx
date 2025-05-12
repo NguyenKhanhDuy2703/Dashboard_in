@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import StaffHeader from "../components/staffHeader";
 import StaffTable from "../components/StaffTable";
-import { FiUsers } from "react-icons/fi";
 
 const StaffManagementPage = () => {
   const [isLoading, setIsLoading] = useState(true);

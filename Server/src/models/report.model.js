@@ -104,10 +104,16 @@ const reportModel = {
         try {
 
             // dem sl nhan vien theo trang thai MySQL
-            const sqlMySQL = `SELECT a.AttendanceMonth, COUNT(e.EmployeeID) AS EmployeeCount
-            FROM Employees e
-            JOIN Attendance a ON e.EmployeeID = a.EmployeeID
-            GROUP BY a.AttendanceMonth`;
+            const sqlMySQL = `SELECT 
+  a.AttendanceMonth,
+  COUNT(e.EmployeeID) AS EmployeeCount,
+  SUM(a.WorkDays) AS TotalWorkDays,
+  SUM(a.AbsentDays) AS TotalAbsentDays,
+  SUM(a.LeaveDays) AS TotalLeaveDays
+FROM Employees e
+JOIN Attendance a ON e.EmployeeID = a.EmployeeID
+GROUP BY a.AttendanceMonth
+ORDER BY a.AttendanceMonth;`;
             const [rows] = await mysqlConnection.query(sqlMySQL);
              
            
@@ -124,7 +130,7 @@ const reportModel = {
            
 
             // tinh tong luong theo phong ban MySQL
-            const sqlMySQL = `SELECT d.DepartmentName, SUM(s.NetSalary) AS TotalSalary
+            const sqlMySQL = `SELECT d.DepartmentName, AVG(s.NetSalary) AS AVGSalary
             FROM Employees e
             JOIN Departments d ON e.DepartmentID = d.DepartmentID
             JOIN salaries s ON e.EmployeeID = s.EmployeeID
@@ -145,6 +151,26 @@ const reportModel = {
             const [rows] = await mysqlConnection.query(mysql);
             cb(null, rows);
 
+        } catch (error) {
+            cb(error, null);
+            
+        }
+    }, 
+    async totalEmployeeAndSalary (cb) {
+        try {
+            sqlQuery = 'SELECT COUNT(EmployeeID) AS TotalEmployees FROM Employees';
+            mysqlQuery = 'SELECT SUM(NetSalary) AS TotalSalary FROM salaries';
+            
+            /// 
+            const [rows] = await mysqlConnection.query(mysqlQuery);
+            const pool = await getSqlServerPool();
+            const result = await pool.request().query(sqlQuery);
+            const totalEmployees = result.recordset[0].TotalEmployees;
+            const totalSalary = rows[0].TotalSalary;
+            cb(null, {
+                totalEmployees,
+                totalSalary
+            });
         } catch (error) {
             cb(error, null);
             

@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import AuthLayout from "../layouts/authLayout";
 
 import Login from "../features/auth/page/login";
-import TwoFactorAuth from "../features/auth/page/TwoFactor";
 import MainLayout from "../layouts/mainLayout";
 import StaffManagementPage from "../features/employees/page/staffManagement";
 import AddStaffForm from "../features/employees/page/addNewEmployee";
@@ -19,7 +18,7 @@ const AppRouter = () => {
     return (
         <Routes>
             <Route path="/auth" element={<AuthLayout />}>
-                <Route path="2fa" element={<TwoFactorAuth />} />
+             
                 <Route path="login" element={<Login />} />
             </Route>
             <Route path="/" element={<MainLayout />} >

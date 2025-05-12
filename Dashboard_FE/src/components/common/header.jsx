@@ -9,6 +9,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import {logout} from "../../services/auth.services"
+import FloatingLoader from './loading';
 
 // Danh sách menu
 const menuItems = [
@@ -47,15 +49,26 @@ export default function Header( {user}) {
 
   };
  
-  const handleLogout = () => {
-    navigate("/auth/login");
+  const handleLogout = async() => {
+    try {
+      const response = await logout();
+      if (response.status === 200) {
+        navigate("/auth/login");
+      } else {
+        console.error("Logout failed:", response.message);
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    } 
+    
+    
   };
-
+ 
   return (
     <div className="w-full  shadow-sm bg-white">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         {/* Logo */}
-        <div className="text-xl font-bold text-blue-600">
+        <div className="text-xl font-bold text-blue-600" onClick={() => handleNavigate("/")}>
           HR Dashboard
         </div>
 

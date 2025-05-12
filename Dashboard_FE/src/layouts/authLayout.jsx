@@ -1,7 +1,7 @@
 
 import { Outlet } from "react-router-dom";
 
-import AuthImage from "../assets/authImage.jpg"
+import AuthImage from "../assets/authImage.png"
 // AuthLayout Component (Parent)
 const AuthLayout = () => {
   // In a real application, you would import this image
@@ -19,7 +19,7 @@ const AuthLayout = () => {
           <img
             src={AuthImage}
             alt="Authentication Image"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
           />
         </div>
       </div>

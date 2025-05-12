@@ -7,7 +7,9 @@ const {
   EmployeeByGroupAttendanceMonthController,
   TotalSalaryByGroupDepartmentController,
   TotalNetSalaryByGroupBySalaryMonthController,
-  TotalBsBoDeBySalaryMonthController
+  TotalBsBoDeBySalaryMonthController ,
+    TotalEmployeeAndSalaryController
+
 } = require('../controllers/reportController');
 
 router.get('/employee-by-group-department', EmployeeByGroupDepartmentController);
@@ -17,6 +19,7 @@ router.get('/employee-by-group-attendance-month', EmployeeByGroupAttendanceMonth
 router.get('/total-salary-by-group-department', TotalSalaryByGroupDepartmentController);
 router.get('/total-net-salary-by-group-by-salary-month', TotalNetSalaryByGroupBySalaryMonthController);
 router.get('/total-bs-bo-de-by-salary-month', TotalBsBoDeBySalaryMonthController);
+router.get('/total-employee-and-salary', TotalEmployeeAndSalaryController);
 
 
 
