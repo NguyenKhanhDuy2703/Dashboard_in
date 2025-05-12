@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
 import { FiSearch, FiUsers, FiFilter, FiUserPlus } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector  , useDispatch} from "react-redux";
+import { fetchEmployees } from "../employeeSlice";
 const StaffHeader = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [staffCount, setStaffCount] = useState(0);
   const [filter, setFilter] = useState("all");
- const employee = useSelector((state) => state.employees);
- 
+  const { employees = [], page, totalPage , total } = useSelector((state) => state.employees);
+ const dispatch = useDispatch();
   // Simulating staff count update on filter change
   useEffect(() => {
-   setStaffCount(employee.total)
-  },[employee]);
+   setStaffCount(total)
+  },[employees]);
 
   const handleAddStaff = () => {
     setIsLoading(true);
@@ -23,6 +24,21 @@ const StaffHeader = () => {
     }, 800);
   };
 
+  const handleSearch = (e) => {
+    if (e.key === "Enter") {
+      const fectchData = async () => {
+        try {
+          await dispatch(fetchEmployees({ page, totalPage, searchText: searchTerm }));
+ 
+          setSearchTerm("");
+        } catch (error) {
+          console.error("Error fetching staff data:", error);
+        }
+      };
+      fectchData();
+
+    }
+  }
   return (
     <div className="p-6 rounded-lg bg-white shadow-lg border border-gray-100">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
@@ -33,6 +49,7 @@ const StaffHeader = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearch}
               placeholder="Search staff..."
               className="w-full border border-gray-300 rounded-lg px-4 py-2.5 pl-10 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent

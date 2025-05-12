@@ -1,12 +1,12 @@
 const employeeModel = require("../models/employee.model");
 
 const getAllEmployeesController = (req, res) => {
-  let { page , limit  } = req.query;
+  let { page , limit , searchText } = req.query;
   console.log("limit", limit);
   if (isNaN(page) || page < 1) page = 1;
   if (isNaN(limit) || limit < 1) limit = 19;
 
-  employeeModel.getAllEmployees({ page, limit }, (err, data) => {
+  employeeModel.getAllEmployees({ page, limit  , searchText}, (err, data) => {
     try {
       if (err) {
         return res.status(500).json({
@@ -205,33 +205,42 @@ const updateEmployeeController = (req, res) => {
   );
 };
 const searchEmployeeController = (req, res) => {
-  const { EmployeeId, FullName, DepartmentID, PositionID } = req.query;
-  employeeModel.searchEmployee(
-    { EmployeeId, FullName, DepartmentID, PositionID },
-    (err, data) => {
-      try {
-        if (err) {
-          return res.status(500).json({
-            message: err.message,
-          });
-        }
-        if (data.length === 0) {
-          return res.status(404).json({
-            message: "No data found",
-          });
-        }
-        return res.status(200).json({
-          message: "Search employee success",
-          data: data,
-        });
-      } catch (error) {
+  const { searchText } = req.query;
+
+  // Kiểm tra xem searchText có hợp lệ không
+  if (!searchText || searchText.trim() === "") {
+    return res.status(400).json({
+      message: "Search text is required and cannot be empty.",
+    });
+  }
+
+  employeeModel.searchEmployee(searchText, (err, data) => {
+    try {
+      if (err) {
         return res.status(500).json({
-          message: error.message,
+          message: `Error searching employees: ${err.message}`,
         });
       }
+
+      // Kiểm tra nếu không có dữ liệu nào trả về
+      if (!data || data.length === 0) {
+        return res.status(404).json({
+          message: "No data found matching the search criteria.",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Search employee success",
+        data: data,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: `Internal server error: ${error.message}`,
+      });
     }
-  );
+  });
 };
+
 
 module.exports = {
   getAllEmployeesController,

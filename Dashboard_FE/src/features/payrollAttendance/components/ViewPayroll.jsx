@@ -4,11 +4,12 @@ import { useDispatch , useSelector } from "react-redux";
 import {fetchPayrolls} from"../payrollSlice"
 import FloatingLoader from "../../../components/common/loading";
 import Pagination from "../../../components/common/Pagination";
+import { useNavigate } from "react-router-dom";
 
 
 export default function ViewPayroll() {
   const [displayData, setDisplayData] = useState([]);
-
+  const navaigate = useNavigate();
 const dispatch = useDispatch();
 
 const { payrolls, currentPage, totalPages, pageSize, loading } = useSelector((state) => state.payroll);
@@ -104,7 +105,11 @@ if (loading) {
                     
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex space-x-2">
-                        <button className="text-indigo-600 hover:text-indigo-900 font-medium">Edit</button>
+                        <button className="text-indigo-600 hover:text-indigo-900 font-medium" 
+                        onClick={() => {
+                          navaigate(`/edit-salary/${row.EmployeeID}`);
+                        }}
+                        >Edit</button>
                         <span className="text-gray-300">|</span>
                         <button className="text-gray-600 hover:text-gray-900">View</button>
                       </div>

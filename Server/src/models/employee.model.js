@@ -3,41 +3,114 @@ const { insertEmployeeMysql, insertEmployeeSQl, updateEmployeeMySQL, updateEmplo
 const sql = require("mssql");
 
 const employeeModel = {
-  async getAllEmployees({ page, limit }, cb) {
-    try {
-      const offset = (page - 1) * limit;
-      const pool = await getSqlServerPool();
-      const result = await pool
-        .request()
-        .input("offset", parseInt(offset))
-        .input("pageSize", parseInt(limit))
-        .query(getAllEmployeesSQL);
-      const { recordset } = result;
-      const sqlData = recordset.map((row) => ({
-        EmployeeID: row.EmployeeID,
-        FullName: row.FullName,
-        DateOfBirth: row.DateOfBirth?.toLocaleDateString('vi-VN'),
-        PhoneNumber: row.PhoneNumber,
-        HireDate: row.HireDate?.toLocaleDateString('vi-VN'),
-        Department: row.DepartmentName,
-        DepartmentID: row.DepartmentID,
-        Position: row.PositionName,
-        PositionID: row.PositionID,
-        Email: row.Email,
-        Gender: row.Gender,
-        Status: row.Status,
-        CreatedAt: row.CreatedAt,
-        UpdatedAt: row.UpdatedAt,
-      }));
+  async getAllEmployees({ page, limit, searchText = '' }, cb) {
+  try {
+    const offset = (page - 1) * limit;
+    const pool = await getSqlServerPool();
 
-      const totalEmployees = await pool.query(`SELECT COUNT(*) as total FROM Employees`);
-      const totalPage = Math.ceil(totalEmployees.recordset[0].total / limit);
-      cb(null, { employees: sqlData, totalPage, totalEmployees: totalEmployees.recordset[0].total, page, limit });
-    } catch (error) {
-      console.error("Error fetching employees from SQL Server:", error);
-      cb(error, null);
+    let query = `
+      SELECT
+        e.EmployeeID,
+        e.FullName,
+        e.DateOfBirth,
+        e.PhoneNumber,
+        e.Gender,
+        e.Email,
+        e.HireDate,
+        e.DepartmentID,
+        d.DepartmentName,
+        e.PositionID,
+        p.PositionName,
+        e.Status,
+        e.CreatedAt,
+        e.UpdatedAt
+      FROM Employees e
+      JOIN Departments d ON e.DepartmentID = d.DepartmentID
+      JOIN Positions p ON e.PositionID = p.PositionID
+    `;
+
+    const request = pool.request();
+
+    if (searchText && searchText.trim() !== '') {
+      query += `
+        WHERE 
+          (e.EmployeeID = TRY_CAST(@search AS INT)) OR
+          e.FullName LIKE @wildSearch OR
+          d.DepartmentName LIKE @wildSearch OR
+          p.PositionName LIKE @wildSearch
+      `;
+      request.input('search', searchText.trim());
+      request.input('wildSearch', `%${searchText.trim()}%`);
     }
-  },
+
+    query += `
+      ORDER BY e.EmployeeID
+      OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
+    `;
+
+    request.input('offset', parseInt(offset));
+    request.input('pageSize', parseInt(limit));
+
+    const result = await request.query(query);
+    const { recordset } = result;
+
+    // Map dữ liệu
+    const sqlData = recordset.map((row) => ({
+      EmployeeID: row.EmployeeID,
+      FullName: row.FullName,
+      DateOfBirth: row.DateOfBirth?.toLocaleDateString('vi-VN'),
+      PhoneNumber: row.PhoneNumber,
+      HireDate: row.HireDate?.toLocaleDateString('vi-VN'),
+      Department: row.DepartmentName,
+      DepartmentID: row.DepartmentID,
+      Position: row.PositionName,
+      PositionID: row.PositionID,
+      Email: row.Email,
+      Gender: row.Gender,
+      Status: row.Status,
+      CreatedAt: row.CreatedAt,
+      UpdatedAt: row.UpdatedAt,
+    }));
+
+    // Đếm tổng (áp dụng search nếu có)
+    let countQuery = `SELECT COUNT(*) as total FROM Employees e
+                      JOIN Departments d ON e.DepartmentID = d.DepartmentID
+                      JOIN Positions p ON e.PositionID = p.PositionID`;
+
+    if (searchText && searchText.trim() !== '') {
+      countQuery += `
+        WHERE 
+          (e.EmployeeID = TRY_CAST(@search AS INT)) OR
+          e.FullName LIKE @wildSearch OR
+          d.DepartmentName LIKE @wildSearch OR
+          p.PositionName LIKE @wildSearch
+      `;
+    }
+
+    const countRequest = pool.request();
+    if (searchText && searchText.trim() !== '') {
+      countRequest.input('search', searchText.trim());
+      countRequest.input('wildSearch', `%${searchText.trim()}%`);
+    }
+
+    const totalEmployees = await countRequest.query(countQuery);
+    const total = totalEmployees.recordset[0].total;
+    const totalPage = Math.ceil(total / limit);
+
+    cb(null, {
+      employees: sqlData,
+      totalPage,
+      totalEmployees: total,
+      page,
+      limit,
+    });
+  } catch (error) {
+    console.error('Error fetching employees with search:', error);
+    cb(error, null);
+  }
+}
+
+,
 
   async addNewEmployee(employee, cb) {
     const mysqlConn = await mysqlConnection.getConnection(); // lấy kết nối MySQL
@@ -271,58 +344,9 @@ const employeeModel = {
       mysqlConn.release(); // Đảm bảo release kết nối MySQL
     }
   },
-  async searchEmployee({ EmployeeID, FullName, DepartmentID, PositionID }, cb) {
-  const mysqlConn = await mysqlConnection.getConnection(); // lấy kết nối MySQL
-  try {
-    // Kết nối SQL Server
-    const pool = await getSqlServerPool();
 
-    // Tạo điều kiện tìm kiếm cho SQL Server
-    let sqlQuery = `
-      SELECT * FROM Employees WHERE 1=1
-      ${EmployeeID ? `AND EmployeeID = @EmployeeID` : ""}
-      ${FullName ? `AND FullName LIKE @FullName` : ""}
-      ${DepartmentID ? `AND DepartmentID = @DepartmentID` : ""}
-      ${PositionID ? `AND PositionID = @PositionID` : ""}
-    `;
 
-    // Tạo điều kiện tìm kiếm cho MySQL
-    let mysqlQuery = `
-      SELECT * FROM employees WHERE 1=1
-      ${EmployeeID ? `AND EmployeeID = ?` : ""}
-      ${FullName ? `AND FullName LIKE ?` : ""}
-      ${DepartmentID ? `AND DepartmentID = ?` : ""}
-      ${PositionID ? `AND PositionID = ?` : ""}
-    `;
 
-    // SQL Server request
-    const sqlRequest = pool.request();
-    if (EmployeeID) sqlRequest.input("EmployeeID", EmployeeID);
-    if (FullName) sqlRequest.input("FullName", `%${FullName}%`);
-    if (DepartmentID) sqlRequest.input("DepartmentID", DepartmentID);
-    if (PositionID) sqlRequest.input("PositionID", PositionID);
-    
-    const resultSQL = await sqlRequest.query(sqlQuery);
-
-    // MySQL query
-    const mysqlParams = [];
-    if (EmployeeID) mysqlParams.push(EmployeeID);
-    if (FullName) mysqlParams.push(`%${FullName}%`);
-    if (DepartmentID) mysqlParams.push(DepartmentID);
-    if (PositionID) mysqlParams.push(PositionID);
-
-    const [mysqlResult] = await mysqlConn.execute(mysqlQuery, mysqlParams);
-
-    // Gộp kết quả từ SQL Server và MySQL
-    const finalResult = [...resultSQL.recordset, ...mysqlResult];
-    cb(null, finalResult);
-  } catch (error) {
-    console.error("Error searching employees:", error);
-    cb(error, null);
-  } finally {
-    mysqlConn.release(); // Đảm bảo release kết nối MySQL
-  }
-}
 
 }
 module.exports = employeeModel;

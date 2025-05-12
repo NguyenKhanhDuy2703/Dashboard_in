@@ -1,11 +1,12 @@
 import axiosInstance  from "./axiosInstance"
 
- export const getAllEmployee = async (page , limit) => {
+ export const getAllEmployee = async (page , limit , searchText) => {
     const url ="employee/get-all" 
    const res =  axiosInstance.get(url , {
          params : {
                page : page,
-               limit : limit
+               limit : limit,
+               searchText : searchText
          }
    })
    return res

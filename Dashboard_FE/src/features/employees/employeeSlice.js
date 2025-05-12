@@ -2,9 +2,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
  import {getAllEmployee  } from "../../services/employee.sevices"
 export const fetchEmployees = createAsyncThunk( 
     'employees/fetchEmployees',
-    async ({page , limit}) => {
+    async ({page , limit , searchText}) => {
         
-        const response = await getAllEmployee(page , limit); // Gọi API để lấy danh sách nhân viên
+        const response = await getAllEmployee(page , limit , searchText); // Gọi API để lấy danh sách nhân viên
         if (response.status !== 200) {
             throw new Error('Failed to fetch employees'); // Ném lỗi nếu không thành công
         }
