@@ -1,9 +1,19 @@
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
+import { 
+  Bell, 
+  MessageCircle, 
+  Award, 
+  AlertTriangle, 
+  MoreVertical, 
+  CheckCircle2, 
+  Calendar 
+} from 'lucide-react';
+import {notificationAnniversary , notificationLeaveViolation} from "../../../services/notification"
 export default function NotificationSystem() {
   const [activeTab, setActiveTab] = useState('unread');
   const [selectedNotifications, setSelectedNotifications] = useState({});
-
+const [workAnniversaryNotifications, setWorkAnniversaryNotifications] = useState([]);
+const [leaveWarningNotifications, setLeaveWarningNotifications] = useState([]);
   // Sample data for colored notifications
   const coloredNotifications = [
     { id: 1, message: "Your payment invoice request has been approved by Admin", time: "Just now", color: "bg-green-100", avatar: "1", date: "today", selected: false },
@@ -14,6 +24,10 @@ export default function NotificationSystem() {
     { id: 6, message: "Your payment invoice request has been approved by Admin", time: "3 hrs ago", color: "bg-red-100", avatar: "2", date: "yesterday", selected: false },
     { id: 7, message: "Your payment invoice request has been approved by Admin", time: "5 hrs ago", color: "bg-orange-100", avatar: "3", date: "yesterday", selected: false },
   ];
+
+
+
+
 
   // Sample data for HR notifications
   const hrNotifications = [
@@ -45,6 +59,21 @@ export default function NotificationSystem() {
     }
   ];
 
+  useEffect ( () => {
+    const fetchData = async () => {
+      try {
+        const responseAnniversary = await notificationAnniversary();
+        const responseLeaveViolation = await notificationLeaveViolation();
+        setWorkAnniversaryNotifications(responseAnniversary.data);
+        setLeaveWarningNotifications(responseLeaveViolation.data);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+    fetchData();
+  },[])
+  console.log("workAnniversaryNotifications", workAnniversaryNotifications);
+  console.log("leaveWarningNotifications", leaveWarningNotifications);
   // Group notifications by date
   const groupedNotifications = coloredNotifications.reduce((acc, notification) => {
     if (!acc[notification.date]) {
@@ -71,13 +100,115 @@ export default function NotificationSystem() {
     );
   };
 
+  // New tabs component
+  const NotificationTabs = () => {
+    return (
+      <div className="flex border-b mb-4">
+        <button 
+          className={`px-4 py-2 flex items-center ${activeTab === 'unread' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500'}`}
+          onClick={() => setActiveTab('unread')}
+        >
+          <Bell className="mr-2 h-5 w-5" />
+          Unread
+        </button>
+        <button 
+          className={`px-4 py-2 flex items-center ${activeTab === 'hr' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500'}`}
+          onClick={() => setActiveTab('hr')}
+        >
+          <MessageCircle className="mr-2 h-5 w-5" />
+          HR Notifications
+        </button>
+        <button 
+          className={`px-4 py-2 flex items-center ${activeTab === 'anniversary' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500'}`}
+          onClick={() => setActiveTab('anniversary')}
+        >
+          <Award className="mr-2 h-5 w-5" />
+          Work Anniversaries
+        </button>
+        <button 
+          className={`px-4 py-2 flex items-center ${activeTab === 'leave' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500'}`}
+          onClick={() => setActiveTab('leave')}
+        >
+          <AlertTriangle className="mr-2 h-5 w-5" />
+          Leave Warnings
+        </button>
+      </div>
+    );
+  };
+
+  // Render work anniversary notifications
+  const WorkAnniversaryNotifications = () => {
+    return (
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold flex items-center">
+            <Award className="mr-2 text-green-600" />
+            Work Anniversaries ({workAnniversaryNotifications.length})
+          </h2>
+        </div>
+        {workAnniversaryNotifications.map((employee) => (
+          <div key={employee.employeeID} className="bg-green-100 rounded-md mb-2 p-3">
+            <div className="flex items-center">
+              <div className="mr-3">
+                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              </div>
+              <div>
+                <p className="text-xl font-medium">Congratulations {employee.fullName}!</p>
+                <p className="text-sm text-gray-600 flex items-center">
+                  <Calendar className="mr-1 h-4 w-4" />
+                  You're celebrating {employee.Years} years with the company
+                  Your joining date was {employee.hireDate}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Render leave warning notifications
+  const LeaveWarningNotifications = () => {
+    return (
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold flex items-center">
+            <AlertTriangle className="mr-2 text-red-600" />
+            Leave Warnings ({leaveWarningNotifications.length})
+          </h2>
+        </div>
+        {leaveWarningNotifications.map((employee) => (
+          <div key={employee.employeeID} className="bg-red-100 rounded-md mb-2 p-3">
+            <div className="flex items-center">
+              <div className="mr-3">
+                <AlertTriangle className="h-8 w-8 text-red-600" />
+              </div>
+              <div>
+                <p className="text-xl font-medium">Leave Warning for {employee.FullName}</p>
+                <p className="text-sm text-gray-600">Please review your leave status</p>
+                <p className="text-sm text-gray-600">You have {employee.LeaveDays} leave days remaining</p>
+                
+
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="max-w-3xl mx-auto bg-gray-50 min-h-screen">
-      {activeTab === 'unread' ? (
+      <NotificationTabs />
+      
+      {activeTab === 'unread' && (
         <div className="unread-notifications p-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Notifications ({coloredNotifications.length} unread)</h2>
-            <button className="bg-blue-500 text-white px-4 py-1 rounded-md text-sm">
+            <h2 className="text-lg font-semibold flex items-center">
+              <Bell className="mr-2" />
+              Notifications ({coloredNotifications.length} unread)
+            </h2>
+            <button className="bg-blue-500 text-white px-4 py-1 rounded-md text-sm flex items-center">
               Mark All as Read
             </button>
           </div>
@@ -109,9 +240,7 @@ export default function NotificationSystem() {
                     </div>
                     <div className="absolute right-2 top-3">
                       <button className="text-gray-500 hover:text-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                        </svg>
+                        <MoreVertical className="h-5 w-5" />
                       </button>
                     </div>
                   </div>
@@ -125,10 +254,15 @@ export default function NotificationSystem() {
             Copyright © 2023 Data Energy. All Rights Reserved
           </div>
         </div>
-      ) : (
+      )}
+
+      {activeTab === 'hr' && (
         <div className="hr-notifications p-4">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold">Notifications from HR</h2>
+            <h2 className="text-lg font-semibold flex items-center">
+              <MessageCircle className="mr-2" />
+              Notifications from HR
+            </h2>
             <button className="bg-blue-500 text-white px-6 py-2 rounded-md text-sm">
               Delete All
             </button>
@@ -153,6 +287,9 @@ export default function NotificationSystem() {
           ))}
         </div>
       )}
+
+      {activeTab === 'anniversary' && <WorkAnniversaryNotifications />}
+      {activeTab === 'leave' && <LeaveWarningNotifications />}
     </div>
   );
 }

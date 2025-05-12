@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
 import {getAllDepartmentAndJobs} from "../../services/department.server"
 import FloatingLoader from '../../components/common/loading';
+import {  useSelector } from 'react-redux';
+import AccessDeniedPage from '../../components/common/notPermission';
+import featureRoles from "../../utils/permissionRole.js"
 export default function ManagementTables() {
   const [departments , setDepartments] = useState([]);
   const [jobTitles , setJobTitles] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const { user } = useSelector((state) => state);
+
+ 
+
 useEffect(() => {
   setLoading(true);
   const fetchDataDepartmentAndJob = async () => {
     try{
       const response = await getAllDepartmentAndJobs();
-      console.log(response);
       setDepartments(response.departments);
       setJobTitles(response.positions);
       // Handle the response data as needed
@@ -24,6 +31,11 @@ useEffect(() => {
   }
   fetchDataDepartmentAndJob();
 } , [])
+ if(featureRoles.department.includes(user.role) === false)  {
+    return (
+      <AccessDeniedPage />
+    );
+  }
   if (loading) {
     return (
      <FloatingLoader />
@@ -46,13 +58,11 @@ useEffect(() => {
               {departments.map((item) => (
                 <tr 
                   key={item.DepartmentID} 
-                  className="hover:bg-gray-50 cursor-pointer "
-                 
+                  className="hover:bg-gray-50 cursor-pointer "     
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.DepartmentID}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex justify-between items-center">
-                    {item.DepartmentName}
-                   
+                    {item.DepartmentName}            
                   </td>
                 </tr>
               ))}
@@ -60,7 +70,6 @@ useEffect(() => {
           </table>
         </div>
       </div>
-
       {/* Job Title Management Table */}
       <div className="bg-white rounded-lg shadow-md p-6 flex-1">
         <h2 className="text-xl font-bold mb-6 text-gray-800">Job Title Management</h2>

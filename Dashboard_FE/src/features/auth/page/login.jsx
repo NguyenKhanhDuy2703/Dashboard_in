@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { FaRegEyeSlash, FaRegEye, FaEnvelope, FaLock, FaFingerprint } from "react-icons/fa";
+import {
+  FaRegEyeSlash,
+  FaRegEye,
+  FaEnvelope,
+  FaLock,
+  FaFingerprint,
+} from "react-icons/fa";
 import { MdOutlineEmail } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../../services/auth.services";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -23,37 +29,44 @@ const Login = () => {
     const fectchLogin = async () => {
       try {
         const response = await login({ email, password });
-         console.log(response);
+        console.log(response);
         if (response.status === 200) {
           toast.success("Login successful!");
           setTimeout(() => {
             navigate("/");
           }, 1000);
-        } else 
-        if (response.status === 401) {
+        } else if (response.status === 401) {
           toast.error("Invalid email or password.");
-        } 
-       else if(response.status === 500) {
+        } else if (response.status === 500) {
           toast.error("your account not authorized");
         }
-       
       } catch (error) {
-        toast.error(error.message ," Please try again.");
+        toast.error(error.message, " Please try again.");
       } finally {
         setTimeout(() => {
           setIsLoading(false);
         }, 2000);
       }
-    }
+    };
     fectchLogin();
-
   };
- 
+
   return (
     <>
       {/* Header */}
       <div>
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="light" />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </div>
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -95,7 +108,10 @@ const Login = () => {
               <label className="text-sm font-medium text-gray-700">
                 Password
               </label>
-              <a href="#" className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
+              <a
+                href="#"
+                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+              >
                 Forgot password?
               </a>
             </div>
@@ -137,19 +153,26 @@ const Login = () => {
               Remember me
             </label>
           </div>
-          
-          {/* Login Button */}
+
           <button
             onClick={handleSubmit}
-            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:opacity-90"
+            disabled={isLoading}
+            className={`w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg font-semibold 
+    hover:opacity-90 transition-opacity duration-300 
+    ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            Sign In
+            {isLoading ? "Signing In..." : "Sign In"}
           </button>
-          
+
           {/* Sign Up Link */}
           <div className="text-center mt-4">
-            <span className="text-gray-600 text-sm">Don't have an account? </span>
-            <a href="#" className="text-blue-600 text-sm font-medium hover:text-blue-800 hover:underline">
+            <span className="text-gray-600 text-sm">
+              Don't have an account?{" "}
+            </span>
+            <a
+              href="#"
+              className="text-blue-600 text-sm font-medium hover:text-blue-800 hover:underline"
+            >
               Sign up now
             </a>
           </div>
@@ -157,7 +180,6 @@ const Login = () => {
       </div>
     </>
   );
-  
 };
 
 export default Login;

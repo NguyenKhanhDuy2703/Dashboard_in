@@ -5,6 +5,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {addNewEmployee} from "../../../services/employee.sevices"
 import { IoArrowBackOutline } from "react-icons/io5";
+import featureRoles from "../../../utils/permissionRole";
+import { useSelector } from "react-redux";
 const AddStaffForm = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -108,6 +110,13 @@ const validateForm = () => {
     };
     fetchDepartmentAndJobs();
   } ,[])
+    //check role
+  const {user} = useSelector((state) => state);
+   if(featureRoles.human.add.includes(user.role) === false)  {
+    return (
+      <AccessDeniedPage />
+    );
+  }
   if(!dataDAJ?.departments || !dataDAJ?.positions) {
     return (
       <FloatingLoader />

@@ -16,6 +16,7 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "file-saver": "^2.0.5",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.488.0",
     "numeral": "^2.0.6",
     "react": "^19.1.0",

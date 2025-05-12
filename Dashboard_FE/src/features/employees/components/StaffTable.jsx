@@ -6,6 +6,8 @@ import Pagination from "../../../components/common/Pagination";
 import {deleteEmployee} from "../../../services/employee.sevices"
 import { toast } from "react-toastify";
 import FloatingLoader from "../../../components/common/loading";
+import featureRoles from "../../../utils/permissionRole";
+import AccessDeniedPage from "../../../components/common/notPermission";
 const StaffTable = () => {
   const [activeMenuIndex, setActiveMenuIndex] = useState(null);
   const menuRefs = useRef([]);
@@ -49,8 +51,16 @@ const StaffTable = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [activeMenuIndex]);
   /// delete nhan vien 
+    //check role
+  const {user} = useSelector((state) => state);
+ 
   const handleDelete = async (EmployeeID) => {
-    if (!window.confirm("Are you sure you want to delete this employee?")) {
+      if(featureRoles.human.delete.includes(user.role) === false)  {
+    return (
+      <AccessDeniedPage />
+    );
+  }else {
+if (!window.confirm("Are you sure you want to delete this employee?")) {
       return;
     }
     setLoading(true);
@@ -67,6 +77,8 @@ const StaffTable = () => {
     {
       setLoading(false);
     }
+  }
+    
   };
   if(loading) { 
     return (

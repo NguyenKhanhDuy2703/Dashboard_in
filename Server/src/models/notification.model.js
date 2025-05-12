@@ -16,37 +16,22 @@ const notificationModel = {
                 `;
             const resultSQL = await pool.request()
                 .input("month", month)
-                .input("day", day)
+                .input("day", day )
                 .query(queryFindNV);
             const sqlEmployees = resultSQL.recordset;
-
-            // Kết nối đến MySQL
-
-            const getListEmployee = `SELECT * FROM Employees `;
-            const [rows] = await mysqlConnection.query(getListEmployee);
-            
-            //kiem tra nhan vien có trong mysql hay không 
-            const mergedEmployees = sqlEmployees
-                .map((item) => {
-                    const mysqlEmployee = rows.find(
-                        (row) =>  row.FullName === item.FullName
-                    );
-                    if (mysqlEmployee) {
-                        return {
-                            ...item,
-                           Email : item.Email,
-                           FullName: item.FullName,
-                           DepartmentName: mysqlEmployee.DepartmentName,
-                            PositionName: mysqlEmployee.PositionName,
-                        
-                        };
-                    } else {
-                        return null;
-                    }
-                })
-                .filter((item) => item !== null); 
-        
-                cb(null, mergedEmployees );
+            // check  kỉ niêm bao nhiêu năm 
+            const sqlEmployeesWithYears = sqlEmployees.map((employee) => {
+                const hireDate = new Date(employee.HireDate);
+                const years = today.getFullYear() - hireDate.getFullYear();
+                return {
+                   employeeID: employee.EmployeeID,
+                    fullName: employee.FullName,
+                    email: employee.Email,
+                    hireDate: new Date(employee.HireDate).toLocaleDateString(),
+                    Years: years,
+                };
+            });
+            cb(null , sqlEmployeesWithYears );
         } catch (error) {
             cb(error, null);
             

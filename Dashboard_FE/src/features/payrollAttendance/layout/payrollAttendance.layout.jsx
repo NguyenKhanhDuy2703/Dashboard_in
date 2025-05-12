@@ -3,6 +3,9 @@ import PayrollTabs from "../components/PayrollTabs";
 import PayrollView from "../components/ViewPayroll";
 import AttendanceRecord from "../components/AttendenceRecord";
 import ViewPayrollHistory from "../components/ViewHistoryPayroll";
+import featureRoles from "../../../utils/permissionRole";
+import { useSelector } from "react-redux";
+import AccessDeniedPage from "../../../components/common/notPermission";
 
 const PayrollAttendanceLayout = () => {
   const [activeTab, setActiveTab] = useState("Payroll");
@@ -58,7 +61,12 @@ const PayrollAttendanceLayout = () => {
         return "View and manage employee payroll data and payment information";
     }
   };
-
+  const { user } = useSelector((state) => state);
+   if(featureRoles.payroll.includes(user.role) === false)  {
+    return (
+      <AccessDeniedPage />
+    );
+  }
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-blue-50 to-indigo-50">
       <div className="w-full mx-auto py-8 px-4 sm:px-6 lg:px-8">

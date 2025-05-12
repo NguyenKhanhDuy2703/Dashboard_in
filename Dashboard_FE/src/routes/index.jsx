@@ -11,6 +11,7 @@ import ManagementTables from "../features/Department/viewDepartments";
 import NotificationSystem from "../features/notification/pages/Notification";
 import HRDashboard from "../features/dashboard/dashboardHome";
 import EditSalary from "../features/payrollAttendance/pages/editSalary";
+import ProfileEmployee from "../features/employees/page/profileEmployee";
 
 
 const AppRouter = () => {
@@ -27,8 +28,9 @@ const AppRouter = () => {
                 <Route path="edit-staff/:id" element={<EditStaffProfile />} />
                 <Route path="add-staff" element={<AddStaffForm />} />
                 <Route path="payroll-attendance" element={<PayrollAttendanceLayout />} >
-           
+            
                 </Route>
+                    <Route path="profile" element={<ProfileEmployee />} />
                 <Route path="edit-salary/:id" element={<EditSalary />} />
                 <Route path="department-job-titles" element={<ManagementTables />} />
                 <Route path="notifications" element={<NotificationSystem />} />

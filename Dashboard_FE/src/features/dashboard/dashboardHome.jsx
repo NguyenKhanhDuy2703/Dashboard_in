@@ -6,6 +6,9 @@ import {reportFollowingDepartment , reportFollowingPosition , reportFollowingSta
 import FloatingLoader from '../../components/common/loading';
 import TotalSalaryBudgetCard from './component/totalSalaryBudgetCard';
 import TotalEmployeesCard from './component/totalEmployeesCard';
+import featureRoles from '../../utils/permissionRole';
+import { useSelector } from 'react-redux';
+import AccessDeniedPage from '../../components/common/notPermission';
 export default function HRDashboard() {
   const [activeTab, setActiveTab] = useState('human');
  const [departments, setDepartments] = useState([]);
@@ -68,7 +71,12 @@ const [attendanceMonth, setAttendanceMonth] = useState([]);
         return null;
     }
   };
-
+ const { user } = useSelector((state) => state);
+ if(featureRoles.dashboard.includes(user.role) === false)  {
+    return (
+      <AccessDeniedPage />
+    );
+  }
 if (loading) {
     return (
      <FloatingLoader />

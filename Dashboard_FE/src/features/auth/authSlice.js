@@ -6,10 +6,14 @@ export const fetchUser = createAsyncThunk(
     async () => {
      try {
            const response = await getToken();
+        
+           
         return response.user; // trả về dữ liệu người dùng
      }
         catch (error) {
-            return error.response; // Trả về phản hồi lỗi từ server
+            
+            console.error("Error fetching user data:", error);
+            throw error; // Ném lại lỗi để xử lý trong extraReducers
         }
     }
 );
@@ -20,6 +24,8 @@ export const fetchUser = createAsyncThunk(
         role : null,
         accessToken : null,
         loading: false,
+        error: null,
+   
     },
     reducers:{
         
@@ -35,8 +41,10 @@ export const fetchUser = createAsyncThunk(
                 state.accessToken = action.payload.accessToken; // Lưu accessToken vào state
                 state.loading = false; // Kết thúc quá trình tải dữ liệu
             })
-            .addCase(fetchUser.rejected, (state) => {
+            .addCase(fetchUser.rejected, (state , action) => {
                 state.loading = false; // Kết thúc quá trình tải dữ liệu khi có lỗi
+                state.error = action.error; // Lưu thông báo lỗi vào state
+
             });
     },
 })

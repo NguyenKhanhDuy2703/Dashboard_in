@@ -2,15 +2,14 @@ import { useEffect, useState } from "react";
 import { getAllDepartmentAndJobs } from "../../../services/department.server";
 import FloatingLoader from "../../../components/common/loading";
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { updateEmployee, getEmployeeById  } from "../../../services/employee.sevices";
 import { IoArrowBackOutline } from "react-icons/io5";
-import { useParams } from "react-router-dom";
-import dayjs from 'dayjs';
 import featureRoles from "../../../utils/permissionRole";
 import { useSelector } from "react-redux";
 import AccessDeniedPage from "../../../components/common/notPermission";
-const EditStaffProfile = () => {
+import dayjs from "dayjs";
+import { useParams } from "react-router-dom";
+const ProfileEmployee = () => {
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [employeeId , setEmployeeId] = useState(id);
@@ -25,76 +24,7 @@ const EditStaffProfile = () => {
   const [position, setPosition] = useState("");
   const [dataDAJ, setDataDAJ] = useState({});
   const [status, setStatus] = useState("");
-  // check if all fields are filled
-  const validateForm = () => {
   
-    const today = new Date();
-    const birthDate = new Date(dob);
-    const hireDateObj = new Date(hireDate);
-
-    // So sánh ngày sinh với hiện tại
-    if (birthDate.toDateString() === today.toDateString()) {
-      toast.error("Date of birth cannot be today's date.");
-      return false;
-    }
-
-    // Phải nhỏ hơn ngày vào làm
-    if (birthDate >= hireDateObj) {
-      toast.error("Date of birth must be before hire date.");
-      return false;
-    }
-
-    // Nhân viên phải lớn hơn 18 tuổi
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const hasHadBirthdayThisYear = (
-      today.getMonth() > birthDate.getMonth() ||
-      (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate())
-    );
-
-    const actualAge = hasHadBirthdayThisYear ? age : age - 1;
-
-    if (actualAge < 18) {
-      toast.error("Staff member must be at least 18 years old.");
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-    
-    const formData = {
-      EmployeeID: id,
-      FullName: `${firstName} ${lastName}`,
-      Email: email,
-      PhoneNumber: phone,
-      Gender: gender,
-      DateOfBirth: dob,
-      HireDate: hireDate,
-      DepartmentID: department,
-      PositionID: position,
-      Status: status,
-    };
-    console.log(formData);
-    const updateStaff = async () => {
-      try {
-        const res = await updateEmployee(formData);
-        console.log(res);
-        if (res.status === 200) {
-          toast.success("Staff member updated successfully!");
-        }
-      } catch (error) {
-        console.error("Error updating staff:", error);
-        toast.error("Failed to update staff member.");
-      }
-    };
-    
-    updateStaff();
-  };
-
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,8 +38,7 @@ const EditStaffProfile = () => {
         // Fetch employee data
         const res = await getEmployeeById(id);
         const employeeData = res.data.data[0];
-        console.log(employeeData);
-       
+       console.log("employeeData", employeeData);
         // Split full name into first name and last name
         const nameParts = employeeData.FullName.split(' ');
   
@@ -138,7 +67,7 @@ const EditStaffProfile = () => {
   }, [id]);
   //check role
   const {user} = useSelector((state) => state);
-   if(featureRoles.human.edit.includes(user.role) === false)  {
+   if(featureRoles.payroll.includes(user.role) === false)  {
     return (
       <AccessDeniedPage />
     );
@@ -183,6 +112,7 @@ const EditStaffProfile = () => {
               <input
                 type="text"
                 value={firstName}
+                readOnly
                 onChange={(e) => setFirstName(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder="First Name"
@@ -194,6 +124,7 @@ const EditStaffProfile = () => {
               <input
                 type="text"
                 value={lastName}
+                readOnly
                 onChange={(e) => setLastName(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder="Last Name"
@@ -205,6 +136,7 @@ const EditStaffProfile = () => {
               <input
                 type="email"
                 value={email}
+                readOnly
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder="Email Address"
@@ -216,6 +148,7 @@ const EditStaffProfile = () => {
               <input
                 type="tel"
                 value={phone}
+                readOnly
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder="Phone Number"
@@ -226,6 +159,7 @@ const EditStaffProfile = () => {
               <label className="block mb-2 text-sm font-medium text-gray-700">Gender</label>
               <select
                 value={gender}
+                readOnly
                 onChange={(e) => setGender(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
@@ -241,6 +175,7 @@ const EditStaffProfile = () => {
               <input
                 type="date"
                 value={dob}
+                readOnly
                 onChange={(e) => setDob(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
@@ -251,6 +186,7 @@ const EditStaffProfile = () => {
               <input
                 type="date"
                 value={hireDate}
+                readOnly
                 onChange={(e) => setHireDate(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
@@ -259,6 +195,7 @@ const EditStaffProfile = () => {
               <label className="block mb-2 text-sm font-medium text-gray-700">Status</label>
               <select
                 value={status}
+                readOnly
                 onChange={(e) => setStatus(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400"    
               >
@@ -271,6 +208,7 @@ const EditStaffProfile = () => {
               <label className="block mb-2 text-sm font-medium text-gray-700">Position</label>
               <select
                 value={position}
+                readOnly
                 onChange={(e) => setPosition(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
@@ -287,6 +225,7 @@ const EditStaffProfile = () => {
               <label className="block mb-2 text-sm font-medium text-gray-700">Department</label>
               <select
                 value={department}
+                readOnly
                 onChange={(e) => setDepartment(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
@@ -322,4 +261,4 @@ const EditStaffProfile = () => {
   );
 };
 
-export default EditStaffProfile;
+export default ProfileEmployee;

@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import StaffHeader from "../components/staffHeader";
 import StaffTable from "../components/StaffTable";
+import { useSelector } from "react-redux";
+import featureRoles from "../../../utils/permissionRole";
+import AccessDeniedPage from "../../../components/common/notPermission";
 
 const StaffManagementPage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -14,6 +17,16 @@ const StaffManagementPage = () => {
     
     return () => clearTimeout(timer);
   }, []);
+
+  //check role
+  const { user } = useSelector((state) => state);
+  console.log(user);
+   if(featureRoles.human.view.includes(user.role) === false)  {
+      return (
+        <AccessDeniedPage />
+      );
+    }
+  
 
   return (
     <div className="bg-gray-50 min-h-screen pb-10">
