@@ -14,7 +14,7 @@ import FloatingLoader from './loading';
 
 // Danh sách menu
 const menuItems = [
-  { icon: <Home size={18} />, label: "Dashboard", path: "/" },
+  { icon: <Home size={18} />, label: "Dashboard", path: "home" },
   { icon: <User size={18} />, label: "Staff", path: "/staff" },
   { icon: <BarChart2 size={18} />, label: "Payroll attendance", path: "/payroll-attendance" },
   { icon: <Briefcase size={18} />, label: "Departments", path: "/department-job-titles" },
@@ -68,7 +68,7 @@ export default function Header( {user}) {
     <div className="w-full  shadow-sm bg-white">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         {/* Logo */}
-        <div className="text-xl font-bold text-blue-600" onClick={() => handleNavigate("/")}>
+        <div className="text-xl font-bold text-blue-600" onClick={() => handleNavigate("/home")}>
           HR Dashboard
         </div>
 

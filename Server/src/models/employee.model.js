@@ -167,6 +167,11 @@ const employeeModel = {
         dataMysql.DepartmentID,
         dataMysql.PositionID,
       ]);
+      // add base salary
+      await mysqlConn.query(
+        `INSERT INTO salaries (EmployeeID, BaseSalary , SalaryMonth , NetSalary) VALUES (?, ? ,? , ?)`,
+        [dataMysql.EmployeeID, 10000000, employee.HireDate , 0]
+      );
 
       await sqlTransaction.commit();
       await mysqlConn.commit();

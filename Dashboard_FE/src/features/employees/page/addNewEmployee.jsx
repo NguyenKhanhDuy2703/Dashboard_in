@@ -93,6 +93,7 @@ const validateForm = () => {
         }
       } catch (error) {
         console.error("Error adding new staff:", error);
+        toast.error("Failed to add staff member. Please try again.");
         
       }
     }

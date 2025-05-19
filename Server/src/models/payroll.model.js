@@ -1,3 +1,4 @@
+const { rows } = require("mssql");
 const { getSqlServerPool, mysqlConnection } = require("../config/config");
 
 const payrollModel = {
@@ -116,10 +117,12 @@ const payrollModel = {
           );
           if (mysqlEmployee) {
             return {
-              ...item,
+              EmployeeID: item.EmployeeID,
+              FullName: item.FullName,
+              
               DepartmentName: mysqlEmployee.DepartmentName,
               PositionName: mysqlEmployee.PositionName,
-              SalaryMonth: mysqlEmployee.SalaryMonth,
+              SalaryMonth: new Date(mysqlEmployee.SalaryMonth).toLocaleDateString("vi-VN"),
               BaseSalary: mysqlEmployee.BaseSalary,
               Bonus: mysqlEmployee.Bonus,
               Deductions: mysqlEmployee.Deductions,
@@ -163,7 +166,7 @@ const payrollModel = {
         }
     
       
-        cb(null, { message: "Update payroll successfully" });
+        cb(null, { message: "Update payroll successfully"  });
       } catch (error) {
         cb(error, null);
       }

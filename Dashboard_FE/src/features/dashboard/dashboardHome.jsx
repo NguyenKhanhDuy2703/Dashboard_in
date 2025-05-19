@@ -71,7 +71,7 @@ const [attendanceMonth, setAttendanceMonth] = useState([]);
         return null;
     }
   };
- const { user } = useSelector((state) => state);
+ const  user  = useSelector((state) => state.user);
  if(featureRoles.dashboard.includes(user.role) === false)  {
     return (
       <AccessDeniedPage />

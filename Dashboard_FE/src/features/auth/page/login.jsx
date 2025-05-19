@@ -32,9 +32,7 @@ const Login = () => {
         console.log(response);
         if (response.status === 200) {
           toast.success("Login successful!");
-          setTimeout(() => {
-            navigate("/");
-          }, 1000);
+          navigate("/home");
         } else if (response.status === 401) {
           toast.error("Invalid email or password.");
         } else if (response.status === 500) {

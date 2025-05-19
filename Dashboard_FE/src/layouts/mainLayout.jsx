@@ -5,9 +5,9 @@ import { fetchUser } from "../features/auth/authSlice";
 import Header from "../components/common/header";
 const MainLayout = () => {
   const dispatch = useDispatch();
-  const { user  } = useSelector((state) => state);
+  const user   = useSelector((state) => state.user);
   const navigate = useNavigate();
- 
+ console.log(user);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -27,7 +27,7 @@ const MainLayout = () => {
       navigate("/auth/login");
     }
   }
-  , [user.error]);
+  , [user.error, navigate]);
 if(!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">

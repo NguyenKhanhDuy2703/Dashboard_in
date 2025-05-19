@@ -98,10 +98,10 @@ if (loading) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.DepartmentName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.PositionName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.SalaryMonth}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.BaseSalary.toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">${row.Bonus.toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${row.Deductions.toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">${row.Deductions.toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.BaseSalary || 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">${row.Bonus|| 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${row.NetSalary || 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">${row.Deductions|| 0}</td>
                     
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex space-x-2">

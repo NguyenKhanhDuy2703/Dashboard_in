@@ -7,7 +7,7 @@ const AccessDeniedPage = () => {
   const navigate = useNavigate();
   const handleGoBack = () => {
    setTimeout(() => {
-        navigate("/");
+        navigate("/home");
      }, 1000);
   };
 

@@ -157,10 +157,10 @@ if (loading) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.DepartmentName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.PositionName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.SalaryMonth}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.BaseSalary.toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">${row.Bonus.toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${row.NetSalary.toLocaleString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">${row.Deductions.toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.BaseSalary.toLocaleString() || 0 }</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">${row.Bonus.toLocaleString() || 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${row.NetSalary.toLocaleString() || 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">${row.Deductions.toLocaleString() || 0}</td>
                     
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex space-x-2">

@@ -79,6 +79,7 @@ useEffect ( () => {
                   { key: "workingDays", label: "Working Days" },
                   { key: "absences", label: "Absences" },
                   { key: "leaveDays", label: "Leave Days" },
+                  { key: "attendanceMonth", label: "Attendance Month" },
                   { key: "status", label: "Status" }
                 ].map((column) => (
                   <th
