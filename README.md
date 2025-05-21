@@ -30,34 +30,45 @@ Mục tiêu của dự án là xây dựng một Dashboard trung gian, không l�
 ---
 
 ## 📁 Cấu trúc thư mục
-
 project-root/
 ├── client/ # React (Vite) frontend
 │ └── src/
-│ ├── components/
-│ ├── pages/
-│ ├── store/
-│ ├── utils/
+│ ├── components/ # Các component dùng chung
+│ ├── pages/ # Các trang chính
+│ ├── store/ # Redux store
+│ ├── utils/ # Hàm tiện ích
 │ ├── App.jsx
 │ └── main.jsx
 │
 ├── server/ # Express backend
-│ ├── controllers/
-│ ├── routes/
-│ ├── models/
-│ ├── middlewares/
-│ ├── utils/
-│ ├── app.js
-│ └── .env
+│ ├── controllers/ # Xử lý logic cho route
+│ ├── routes/ # Định tuyến API
+│ ├── models/ # Kết nối & thao tác DB
+│ ├── middlewares/ # Xử lý trung gian (auth, error...)
+│ ├── utils/ # Hàm tiện ích backend
+│ ├── app.js # Khởi tạo server
+│ └── .env # Biến môi trường
 │
-└── README.md
-
----
+└── README.md # Tài liệu hướng dẫn
 
 ## 📦 Thông tin Dependencies
+## 📦 Thông tin Dependencies
 
-### 🔙 Backend (`server/package.json`)
+### 🖥️ Backend (`server/package.json`)
 
+Các thư viện chính:
+- `express`: ^4.21.1
+- `dotenv`: ^16.4.5
+- `mssql`: ^11.0.1
+- `mysql2`: ^3.14.0
+- `jsonwebtoken`: ^9.0.2
+- `bcrypt`: ^5.1.1
+- `cookie-parser`, `cors`, `nodemon`, `morgan`
+
+<details>
+<summary>📄 Xem chi tiết JSON</summary>
+
+```json
 {
   "name": "server",
   "version": "1.0.0",
@@ -75,7 +86,9 @@ project-root/
     "nodemon": "^3.1.3"
   }
 }
-###  FronEnd
+
+###  FrontEnd
+
 {
   "name": "dashboard",
   "version": "0.0.0",
@@ -113,6 +126,7 @@ project-root/
     "vite": "^6.2.0"
   }
 }
+
 #### run 
 FE
 cd Dashboard 
