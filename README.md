@@ -31,28 +31,43 @@ Mục tiêu của dự án là xây dựng một Dashboard trung gian, không l�
 
 ## 📁 Cấu trúc thư mục
 project-root/
+
 ├── client/ # React (Vite) frontend
+
 │ └── src/
+
 │ ├── components/ # Các component dùng chung
+
 │ ├── pages/ # Các trang chính
+
 │ ├── store/ # Redux store
+
 │ ├── utils/ # Hàm tiện ích
+
 │ ├── App.jsx
+
 │ └── main.jsx
 │
 ├── server/ # Express backend
+
 │ ├── controllers/ # Xử lý logic cho route
+
 │ ├── routes/ # Định tuyến API
+
 │ ├── models/ # Kết nối & thao tác DB
+
 │ ├── middlewares/ # Xử lý trung gian (auth, error...)
+
 │ ├── utils/ # Hàm tiện ích backend
+
 │ ├── app.js # Khởi tạo server
+
 │ └── .env # Biến môi trường
 │
 └── README.md # Tài liệu hướng dẫn
 
 ## 📦 Thông tin Dependencies
-## 📦 Thông tin Dependencies
+
 
 ### 🖥️ Backend (`server/package.json`)
 
